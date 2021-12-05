@@ -1,7 +1,7 @@
 """
 SQL Handling Utility
 Created by Lun Surdyaev on 2021-12-04
-Last Updated on 2021-12-04
+Last Updated on 2021-12-05
 Maintained by Lun Surdyaev lunvang@gmail.com
 
 Description:
@@ -17,23 +17,24 @@ import os
 import sqlite3
 
 # queries
-create_tables = ["""
+create_tables = """
 PRAGMA foreign_keys=ON;
-CREATE TABLE IF NOT EXISTS L3m_files (
-                                        id TEXT PRIMARY KEY,
-                                        location TEXT,
-                                        exists INTEGER,
-                                        created_at TEXT
+CREATE TABLE IF NOT EXISTS L3m_files (  id TEXT     PRIMARY KEY,
+                                        location    TEXT,
+                                        file_exists INTEGER,
+                                        created_at  TEXT
                                         );
-CREATE TABLE IF NOT EXISTS L2_files (   id TEXT PRIMARY KEY,
-                                        download_url TEXT,
-                                        location STRING,
-                                        target TEXT REFERENCES L3m_files(id),
-                                        exists INTEGER,
-                                        created_at TEXT
+CREATE TABLE IF NOT EXISTS L2_files (   id              TEXT PRIMARY KEY,
+                                        download_url    TEXT,
+                                        location        TEXT,
+                                        target          TEXT,
+                                        file_exists     INTEGER,
+                                        created_at      TEXT,
+                                        FOREIGN KEY (target) REFERENCES L3m_files(id)
                                         );
-"""]
-count_files = "SELECT count() FROM {0} WHERE id={1}"
+"""
+count_files = "SELECT count() FROM {0} WHERE id='{1}'"
+insert_file = "INSERT INTO {0} ({1}) VALUES ({2})"
 
 # execute a given query, and return a value according to the return_type argument
 def Execute(query, return_type = None):
@@ -45,6 +46,7 @@ def Execute(query, return_type = None):
         queries = query.split(';')
         for q in queries:
             cur.execute(q)
+            print("er")
 
         # decide on return value
         if return_type is None:
@@ -65,21 +67,27 @@ def Execute(query, return_type = None):
 def Exists(table, entry):
     return bool(Execute(count_files.format(table, entry), "scalar"))
 
-def Insert():
-    pass
+def Insert(table, entry):
+
+    for item in entry.items():
+        if isinstance(item[1], str):
+            entry[item[0]] = "'"+item[1]+"'"
+        elif isinstance(item[1], int):
+            entry[item[0]] = str(item[1])
+
+
+    query = insert_file.format(table, ','.join(entry.keys()), ','.join(entry.values()))
+    Execute(query)
 
 # converts a filename into a dictionary containing all fields
 def FilenameToDict(filename, location):
     d = {"id": filename,
-         "exists": 1,
-         "created_at": None,
+         "file_exists": 1,
          "location": location
          }
 
     p = GetFileProperties(filename)
-
-    if properties["level"] == "L2":
-        d["download_url"] = None
+    if p["level"] == "L2":
         d["target"] = f"{p['mission']}_{p['sensor']}.{p['date']}.L3m.{p['period']}.{p['type']}.{params.resolution}.nc"
         
     return d
@@ -90,11 +98,10 @@ def InsertFiles(path, filetype):
 
         # if the item is a directory, go through it recursively
         if os.path.isdir(path+item):
-            InsertFiles(path+item, filetype)
+            InsertFiles(path+item+'/', filetype)
 
         # else, if the file isn't in the DB, insert it
         elif not Exists(filetype+"_files", item):
-
             # insert file into DB
             db_entry = FilenameToDict(item, path)
             Insert(filetype+"_files", db_entry)
