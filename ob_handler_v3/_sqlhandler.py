@@ -16,14 +16,14 @@ import os
 import sqlite3
 
 # queries
-create_tables = """
+create_tables = ["""
+PRAGMA foreign_keys=ON;
 CREATE TABLE IF NOT EXISTS L3m_files (
                                         id TEXT PRIMARY KEY,
                                         location TEXT,
                                         exists INTEGER,
                                         created_at TEXT
                                         );
-
 CREATE TABLE IF NOT EXISTS L2_files (   id TEXT PRIMARY KEY,
                                         download_url TEXT,
                                         location STRING,
@@ -31,7 +31,7 @@ CREATE TABLE IF NOT EXISTS L2_files (   id TEXT PRIMARY KEY,
                                         exists INTEGER,
                                         created_at TEXT
                                         );
-"""
+"""]
 count_files = "SELECT count() FROM {0} WHERE id={1}"
 
 # execute a given query, and return a value according to the return_type argument
@@ -40,7 +40,10 @@ def Execute(query, return_type = None):
         # execute query
         conn = sqlite3.connect(params.path_to_data + params.db_filename)
         cur = conn.cursor()
-        cur.execute(query)
+
+        queries = query.split(';')
+        for q in queries:
+            cur.execute(q)
 
         # decide on return value
         if return_type is None:
