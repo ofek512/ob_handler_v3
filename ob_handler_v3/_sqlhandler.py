@@ -46,7 +46,6 @@ def Execute(query, return_type = None):
         queries = query.split(';')
         for q in queries:
             cur.execute(q)
-            print("er")
 
         # decide on return value
         if return_type is None:
@@ -68,14 +67,13 @@ def Exists(table, entry):
     return bool(Execute(count_files.format(table, entry), "scalar"))
 
 def Insert(table, entry):
-
     for item in entry.items():
         if isinstance(item[1], str):
             entry[item[0]] = "'"+item[1]+"'"
         elif isinstance(item[1], int):
             entry[item[0]] = str(item[1])
 
-
+    print("Inserting object", entry)
     query = insert_file.format(table, ','.join(entry.keys()), ','.join(entry.values()))
     Execute(query)
 
@@ -88,7 +86,7 @@ def FilenameToDict(filename, location):
 
     p = GetFileProperties(filename)
     if p["level"] == "L2":
-        d["target"] = f"{p['mission']}_{p['sensor']}.{p['date']}.L3m.{p['period']}.{p['type']}.{params.resolution}.nc"
+        d["target"] = f"{p['mission']}_{p['sensor']}.{p['date']}.L3m.DAY.{p['type']}.{params.resolution}.nc"
         
     return d
 
