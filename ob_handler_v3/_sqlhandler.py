@@ -9,6 +9,7 @@ This is a utility for handling the SQL-based File Management Database.
 It uses the constants defined in params.py to find the database, and provides an interface to it via its functions.
 """
 
+# local params
 import params
 from _util import *
 
