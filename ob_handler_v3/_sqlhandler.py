@@ -110,8 +110,8 @@ def InsertFiles(path, filetype):
             if filetype == "L2" and not Exists("L3m_files", db_entry["target"]):
                 Insert("L3m_files", {"id":db_entry["target"], "location":None, "file_exists":0, "created_at":None})
 
-def SelectExisting(table):
-    return Execute(select_existing.format(table), "list")
+def GetExisting(table):
+    return [item[0] for item in Execute(select_existing.format(table), "list")]
 
 if __name__ == "__main__":
     # if run as its own script, this produces the File Management Database

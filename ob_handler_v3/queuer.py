@@ -23,12 +23,39 @@ NOTE 2: This script can be run during downloading/processing of data, to add mor
 
 from datetime import datetime, timedelta
 
-from util import *
+from _util import *
+import params
 import _sqlhandler as sql
+
+class Interval:
+    def __init__(self, start, end):
+        self.start = start
+        self.end = end
+
+    def split(self, date):
+        if date > self.end or date < self.start:
+            return [Interval(self.start, self.end)]
+        elif date == self.start:
+            return [Interval(self.start + timedelta(1), self.end)]
+        elif date == self.end:
+            return [Interval(self.start, self.end + timedelta(1))]
+        else:
+            return [Interval(self.start, date-timedelta(1)), Interval(date+timedelta(1), self.end)]
+
+    def __eq__(self, other):
+        return self.start == other.start and self.end == other.end
+
+def GetNumberOfFiles(requests):
+    pass
+
+def GetDownloadURLs(requests):
+    pass
 
 def main():
     # what sattelites do we want
     missions = input(mission_prompt)
+    if missions == "":
+        missions = params.default_missions
     missions = [ID_TO_NAME[id.upper()] for id in missions]
 
     # what dates
@@ -44,11 +71,35 @@ def main():
         exit("Program terminated.")
 
     # check database for existing L3m data
-    L3m_files = sql.GetExisting("L3m_files")
+    L3m_files = [GetFileProperties(file) for file in sql.GetExisting("L3m_files")]
 
-    print(missions, '\n', L3m_files)
+    # bin data into missions
+    dates_by_mission = {mission: [] for mission in missions}
+    for file in L3m_files:
+        if file["identifier"] in missions:
+            # check if there's an overlap
+            if file["date"] >= start_date and file["date"] <= end_date:
+                dates_by_mission[file["identifier"]].append(file["date"])
+                # notify user
+                print("The file", file, "is included in the overlap. This file's L2 predecessors won't be downloaded")
 
-    # notify user if there is any overlap
+
+    #for item in dates_by_mission.items():
+    #    print(item[0], [date.strftime("%Y-%m-%d") for date in dates_by_mission[item[0]]])
+
+    # fix overlap
+    for mission,dates in dates_by_mission.items():
+        dates.sort()
+        intervals = [Interval(start_date, end_date)]
+        for date in dates:
+            i = intervals[-1]
+            del intervals[-1]
+            intervals += i.split(date)
+
+        print(mission)
+        for i in intervals:
+            print(i.start.strftime("%Y-%m-%d"), i.end.strftime("%Y-%m-%d"))
+
 
     # check number of expected files to be downloaded
     # increment the end date by 1, for API querying
@@ -60,5 +111,5 @@ def main():
 
     # put filenames in DB
 
-if __name == "__main__":
+if __name__ == "__main__":
     main()

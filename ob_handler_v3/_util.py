@@ -6,6 +6,7 @@ Maintained by Lun Surdyaev lunvang@gmail.com
 """
 
 import os
+from datetime import datetime
 
 # print messages
 mission_prompt = """Please type the identifiers of the missions you are interested in gathering data from.
@@ -19,8 +20,6 @@ j - JPSS1_VIIRS
 n - SNPP_VIIRS
 
 Your answer: """
-
-
 
 # sensor identifiers
 ID_TO_NAME = {
@@ -52,10 +51,12 @@ def GetFileProperties(filename_with_extension):
     date = components[1][:8]
     level = components[2]
     
-    properties = {"mission":mission, 
-        "sensor":sensor,
-        "date":date,
-        "level":level
+    properties = {
+        "mission": mission, 
+        "sensor": sensor,
+        "identifier": mission+'_'+sensor,
+        "date": datetime.strptime(date, "%Y%m%d"),
+        "level": level
     }
     
     # some properties are only relevant for L3 data
