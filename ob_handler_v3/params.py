@@ -3,7 +3,7 @@ path_to_data = "/data/lsurdyaev/data/"
 db_filename = "file_management.db"
 
 # queuer parameters
-default_missions = []
+default_missions = "atjns"
 
 # downloader parameters
 folder_size_check_interval = 120 # minutes

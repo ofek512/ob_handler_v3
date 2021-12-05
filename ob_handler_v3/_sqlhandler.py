@@ -35,6 +35,7 @@ CREATE TABLE IF NOT EXISTS L2_files (   id              TEXT PRIMARY KEY,
 """
 count_files = "SELECT count() FROM {0} WHERE id='{1}'"
 insert_file = "INSERT INTO {0} ({1}) VALUES ({2})"
+select_existing = "SELECT id FROM {0} WHERE file_exists=1"
 
 # execute a given query, and return a value according to the return_type argument
 def Execute(query, return_type = None):
@@ -109,6 +110,9 @@ def InsertFiles(path, filetype):
             if filetype == "L2" and not Exists("L3m_files", db_entry["target"]):
                 Insert("L3m_files", {"id":db_entry["target"], "location":None, "file_exists":0, "created_at":None})
 
+def SelectExisting(table):
+    return Execute(select_existing.format(table), "list")
+
 if __name__ == "__main__":
     # if run as its own script, this produces the File Management Database
 
@@ -116,7 +120,6 @@ if __name__ == "__main__":
     Execute(create_tables)
 
     # cycle through all files in the data directory recursively and insert them into the DB (if they aren't there already)
-
     # this ordering is important, as inserting L2 files will check whether L3m files are in the database, and not on the disk itself.
     InsertFiles(params.path_to_data+"L3m/", "L3m")
     InsertFiles(params.path_to_data+"L2/", "L2")
