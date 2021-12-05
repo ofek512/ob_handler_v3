@@ -40,7 +40,7 @@ insert_file = "INSERT INTO {0} ({1}) VALUES ({2})"
 def Execute(query, return_type = None):
     try:
         # execute query
-        conn = sqlite3.connect(params.path_to_data + params.db_filename)
+        conn = sqlite3.connect(params.path_to_data + params.db_filename, isolation_level=None)
         cur = conn.cursor()
 
         queries = query.split(';')
@@ -67,14 +67,15 @@ def Exists(table, entry):
     return bool(Execute(count_files.format(table, entry), "scalar"))
 
 def Insert(table, entry):
+    formatted_entry = dict()
     for item in entry.items():
         if isinstance(item[1], str):
-            entry[item[0]] = "'"+item[1]+"'"
+            formatted_entry[item[0]] = "'"+item[1]+"'"
         elif isinstance(item[1], int):
-            entry[item[0]] = str(item[1])
+            formatted_entry[item[0]] = str(item[1])
 
-    print("Inserting object", entry)
-    query = insert_file.format(table, ','.join(entry.keys()), ','.join(entry.values()))
+    print("Inserting object", formatted_entry)
+    query = insert_file.format(table, ','.join(formatted_entry.keys()), ','.join(formatted_entry.values()))
     Execute(query)
 
 # converts a filename into a dictionary containing all fields
@@ -106,7 +107,7 @@ def InsertFiles(path, filetype):
 
             # only for L2 files, check whether their target is in the database, and if not so, insert it.
             if filetype == "L2" and not Exists("L3m_files", db_entry["target"]):
-                Insert("L3m_files", {"id":db_entry["target"], "location":None, "exists":0, "created_at":None})
+                Insert("L3m_files", {"id":db_entry["target"], "location":None, "file_exists":0, "created_at":None})
 
 if __name__ == "__main__":
     # if run as its own script, this produces the File Management Database
