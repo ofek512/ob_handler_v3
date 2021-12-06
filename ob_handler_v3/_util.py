@@ -33,7 +33,7 @@ ID_TO_NAME = {
     }
 
 MISSION_TO_SHORTNAMES = {
-    "SEAWIFS": ["SeaWiFS_L2_OC"],
+    "SeaStar_SeaWiFS": ["SeaWiFS_L2_OC"],
     "AQUA_MODIS": ["MODISA_L2_OC", "MODISA_L2_SST"],
     "TERRA_MODIS": ["MODIST_L2_OC", "MODIST_L2_SST"],
     "JPSS1_VIIRS": ["VIIRSJ1_L2_OC"],
@@ -68,3 +68,7 @@ def GetFileProperties(filename_with_extension):
         properties["resolution"] = components[5]
     
     return properties
+
+def ProduceL3mFilename(L2_filename):
+    p = GetFileProperties(L2_filename)
+    return f"{p['mission']}_{p['sensor']}.{p['date']}.L3m.DAY.{p['type']}.{params.resolution}.nc"

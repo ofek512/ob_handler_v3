@@ -11,7 +11,7 @@ It uses the constants defined in params.py to find the database, and provides an
 
 # local imports
 import params
-from _util import *
+import _util as util
 
 import os
 import sqlite3
@@ -85,6 +85,20 @@ def Execute(query, return_type = None):
 def Exists(table, entry):
     return bool(Execute(count_files.format(table, entry), "scalar"))
 
+# converts a filename into a dictionary containing all fields
+def FilenameToDict(filename, location):
+    d = {"id": filename,
+         "file_exists": 1,
+         "location": location
+         }
+
+    p = util.GetFileProperties(filename)
+    if p["level"] == "L2":
+        d["target"] = util.ProduceL3mFilename(filename)
+        
+    return d
+
+# formats an entry (given in the form of a dictionary) into a fields-values pair
 def FormatEntry(entry):
     formatted_entry = dict()
     for item in entry.items():
@@ -93,29 +107,17 @@ def FormatEntry(entry):
         elif isinstance(item[1], int):
             formatted_entry[item[0]] = str(item[1])
 
-
     return ','.join(formatted_entry.keys()), ','.join(formatted_entry.values())
 
-def InsertL3m(fields, values):
-    query = insert_L3m.format(fields, values)
+def InsertL3m(entry):
+    query = insert_L3m.format(*FormatEntry(entry))
     Execute(query)
     
-def InsertL2(fields1, values1, fields2, values2):
-    query = insert_L2.format(fields1, values1, fields2, values2)
+def InsertL2(entry):
+    # generate a L3m entry
+    L3m_entry = {"id":entry["target"], "file_exists":0}
+    query = insert_L2.format(*FormatEntry(entry), *FormatEntry(L3m_entry))
     Execute(query)
-
-# converts a filename into a dictionary containing all fields
-def FilenameToDict(filename, location):
-    d = {"id": filename,
-         "file_exists": 1,
-         "location": location
-         }
-
-    p = GetFileProperties(filename)
-    if p["level"] == "L2":
-        d["target"] = f"{p['mission']}_{p['sensor']}.{p['date']}.L3m.DAY.{p['type']}.{params.resolution}.nc"
-        
-    return d
 
 def InsertFiles(path, filetype):
     filelist = os.listdir(path)
@@ -127,15 +129,12 @@ def InsertFiles(path, filetype):
 
         # else, try inserting the file
         else:
-            i = Exists("L3m_files", "gg")
             db_entry = FilenameToDict(item, path)
-            fields, values = FormatEntry(db_entry)
 
             if filetype == "L2":
-                L3m_entry = {"id":db_entry["target"], "file_exists":0}
-                InsertL2(fields, values, *FormatEntry(L3m_entry))
+                InsertL2(db_entry)
             else:
-                InsertL3m(fields, values)
+                InsertL3m(db_entry)
 
 def GetExisting(table):
     return [item[0] for item in Execute(select_existing.format(table), "list")]
