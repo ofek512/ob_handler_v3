@@ -170,7 +170,7 @@ Because of that, instead of following the entire timespan, the following timespa
 
     # fetch filenames
     filenames = []
-    for mission, requests in mission_to_requests:
+    for mission, requests in mission_to_requests.items():
         print("Gathering", mission, "file download URLs...", end=' ')
         for request in requests:
             filenames += GetDownloadURLs(*request)
