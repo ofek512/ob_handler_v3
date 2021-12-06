@@ -165,7 +165,7 @@ Because of that, instead of following the entire timespan, the following timespa
         print(n)
 
     # final green light
-    if input("Do you wanna queue", s, "files to be downloaded? [Y/n]").lower() != 'y':
+    if input("Do you wanna queue " + s + " files to be downloaded? [Y/n]").lower() != 'y':
         exit("Program terminated")
 
     # fetch filenames
