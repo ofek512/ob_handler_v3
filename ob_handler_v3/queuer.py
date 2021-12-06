@@ -35,6 +35,8 @@ class Interval:
     def split(self, date):
         if date > self.end or date < self.start:
             return [Interval(self.start, self.end)]
+        elif date == self.start and date == self.end:
+            return []
         elif date == self.start:
             return [Interval(self.start + timedelta(1), self.end)]
         elif date == self.end:
@@ -45,10 +47,14 @@ class Interval:
     def __eq__(self, other):
         return self.start == other.start and self.end == other.end
 
-def GetNumberOfFiles(requests):
+    # a string representation, for search API
+    def __str__(self):
+        return self.start.strftime("%Y-%m-%d") + "," + (self.end + timedelta(1)).strftime("%Y-%m-%d")
+
+def GetNumberOfFiles(request):
     pass
 
-def GetDownloadURLs(requests):
+def GetDownloadURLs(request):
     pass
 
 def main():
@@ -80,14 +86,13 @@ def main():
             # check if there's an overlap
             if file["date"] >= start_date and file["date"] <= end_date:
                 dates_by_mission[file["identifier"]].append(file["date"])
-                # notify user
-                print("The file", file, "is included in the overlap. This file's L2 predecessors won't be downloaded")
 
 
     #for item in dates_by_mission.items():
     #    print(item[0], [date.strftime("%Y-%m-%d") for date in dates_by_mission[item[0]]])
 
     # fix overlap
+    mission_to_requests = {mission:[] for mission in missions}
     for mission,dates in dates_by_mission.items():
         dates.sort()
         intervals = [Interval(start_date, end_date)]
@@ -96,20 +101,44 @@ def main():
             del intervals[-1]
             intervals += i.split(date)
 
-        print(mission)
-        for i in intervals:
-            print(i.start.strftime("%Y-%m-%d"), i.end.strftime("%Y-%m-%d"))
+        if len(intervals) == 0:
+            print("For the mission", mission,
+                  "no files will be downloaded, as all data in the provided timespan already exists in L3m format.")
+        elif len(intervals) > 1:
+            print("For the mission", mission,
+                  """some data in the provided timespan already exists in L3m format. These dates have been excluded.
+Because of that, instead of following the entire timespan, the following timespans will be downloaded:""")
+            for i in intervals:
+                print(i.start.strftime("%Y-%m-%d"), "to", i.end.strftime("%Y-%m-%d"))
 
+        for i in intervals:
+            for shortname in MISSION_TO_SHORTNAMES[mission]:
+                mission_to_requests[mission].append([shortname, str(i)])
 
     # check number of expected files to be downloaded
-    # increment the end date by 1, for API querying
-    end_date += timedelta(1)
+    sum = 0
+    for mission, requests in mission_to_requests:
+        n = sum([GetNumberOfFiles(request) for request in requests])
+        sum += n
+        print("Number of", mission, "files to be downloaded:", n)
 
     # final green light
+    if input("Do you wanna queue", sum, "files to be downloaded? [Y/n]").lower() != 'y':
+        exit("Program terminated")
 
     # fetch filenames
+    filenames = []
+    for mission, requests in mission_to_requests:
+        print("Gathering", mission, "file download URLs...", end=' ')
+        for request in requests:
+            filenames += GetDownloadURLs(request)
+        print("Gathered.")
 
     # put filenames in DB
+    print("Inserting download URLs into database...", end=' ')
+    for filename in filenames:
+        sql.InsertL2()
+    print("Done.")
 
 if __name__ == "__main__":
     main()

@@ -9,7 +9,7 @@ This is a utility for handling the SQL-based File Management Database.
 It uses the constants defined in params.py to find the database, and provides an interface to it via its functions.
 """
 
-# local params
+# local imports
 import params
 from _util import *
 
@@ -22,7 +22,8 @@ PRAGMA foreign_keys=ON;
 CREATE TABLE IF NOT EXISTS L3m_files (  id TEXT     PRIMARY KEY,
                                         location    TEXT,
                                         file_exists INTEGER,
-                                        created_at  TEXT
+                                        created_at  TEXT,
+                                        UNIQUE(id)
                                         );
 CREATE TABLE IF NOT EXISTS L2_files (   id              TEXT PRIMARY KEY,
                                         download_url    TEXT,
@@ -30,36 +31,51 @@ CREATE TABLE IF NOT EXISTS L2_files (   id              TEXT PRIMARY KEY,
                                         target          TEXT,
                                         file_exists     INTEGER,
                                         created_at      TEXT,
-                                        FOREIGN KEY (target) REFERENCES L3m_files(id)
+                                        FOREIGN KEY (target) REFERENCES L3m_files(id),
+                                        UNIQUE(id)
                                         );
 """
 count_files = "SELECT count() FROM {0} WHERE id='{1}'"
-insert_file = "INSERT INTO {0} ({1}) VALUES ({2})"
 select_existing = "SELECT id FROM {0} WHERE file_exists=1"
+
+insert_L2 = """ INSERT OR IGNORE    INTO L3m_files ({2}) VALUES ({3});
+                INSERT              INTO L2_files  ({0}) VALUES ({1});"""
+insert_L3m = "INSERT INTO L3m_files ({0}) VALUES ({1})"
 
 # execute a given query, and return a value according to the return_type argument
 def Execute(query, return_type = None):
     try:
-        # execute query
+        # preparation
         conn = sqlite3.connect(params.path_to_data + params.db_filename, isolation_level=None)
         cur = conn.cursor()
+        cur.execute("BEGIN")
+        # breaking query into commands
+        commands = query.split(';')
 
-        queries = query.split(';')
-        for q in queries:
-            cur.execute(q)
+        try:
+            # execute all commands
+            for com in commands:
+                cur.execute(com)
+            cur.execute("COMMIT")
 
-        # decide on return value
-        if return_type is None:
-            retval = None
-        elif return_type == "scalar":
-            retval = cur.fetchone()[0]
-        else:
-            retval = cur.fetchall()
+            # decide on return value
+            if return_type is None:
+                retval = None
+            elif return_type == "scalar":
+                retval = cur.fetchone()[0]
+            else:
+                retval = cur.fetchall()
+
+        except conn.Error as error:
+            print("Error while processing transaction:", error)
+            cur.execute("ROLLBACK")
+
+        conn.close()
 
     except sqlite3.Error as error:
-        print("Sqlite3 error:", error)
-    finally:
+        print("Error while connecting to database:", error)
         conn.close()
+        exit("Program terminated.")
 
     return retval
 
@@ -67,7 +83,7 @@ def Execute(query, return_type = None):
 def Exists(table, entry):
     return bool(Execute(count_files.format(table, entry), "scalar"))
 
-def Insert(table, entry):
+def FormatEntry(entry):
     formatted_entry = dict()
     for item in entry.items():
         if isinstance(item[1], str):
@@ -75,8 +91,15 @@ def Insert(table, entry):
         elif isinstance(item[1], int):
             formatted_entry[item[0]] = str(item[1])
 
-    print("Inserting object", formatted_entry)
-    query = insert_file.format(table, ','.join(formatted_entry.keys()), ','.join(formatted_entry.values()))
+
+    return ','.join(formatted_entry.keys()), ','.join(formatted_entry.values())
+
+def InsertL3m(fields, values):
+    query = insert_L3m.format(fields, values)
+    Execute(query)
+    
+def InsertL2(fields1, values1, fields2, values2):
+    query = insert_L2.format(fields1, values1, fields2, values2)
     Execute(query)
 
 # converts a filename into a dictionary containing all fields
@@ -102,13 +125,13 @@ def InsertFiles(path, filetype):
 
         # else, if the file isn't in the DB, insert it
         elif not Exists(filetype+"_files", item):
-            # insert file into DB
             db_entry = FilenameToDict(item, path)
-            Insert(filetype+"_files", db_entry)
+            fields, values = FormatEntry(db_entry)
 
-            # only for L2 files, check whether their target is in the database, and if not so, insert it.
-            if filetype == "L2" and not Exists("L3m_files", db_entry["target"]):
-                Insert("L3m_files", {"id":db_entry["target"], "location":None, "file_exists":0, "created_at":None})
+            if filetype == "L2":
+                InsertL2(fields, values, *FormatEntry({"id":db_entry["target"], "file_exists":0}))
+            else:
+                InsertL3m(fields, values)
 
 def GetExisting(table):
     return [item[0] for item in Execute(select_existing.format(table), "list")]
