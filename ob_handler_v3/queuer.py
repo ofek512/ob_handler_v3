@@ -89,7 +89,7 @@ def GetDownloadURLs(shortname, timespan):
         response = urlopen(request)
         search_results = json.loads(response.read())
     
-        if not search_results["items"]:
+        if search_results["items"] is None:
             print("Unexpected error occured. No items were found.")
             pprint.pprint(search_results)
             exit("Program terminated")
@@ -97,6 +97,41 @@ def GetDownloadURLs(shortname, timespan):
         hits += [item["umm"]["RelatedUrls"][0]["URL"] for item in search_results["items"]]
 
     return hits
+
+# converts a YYYYDDDHHMMSS date format into a YYYYMMDDTHHMMSS time format
+def GenerateTimestamp(ts):
+    return datetime.strptime(ts, "%Y%j%H%M%S").strftime("%Y%m%dT%H%M%S")
+
+# generate a filename in the new OB.DAAC file naming convention
+def GenFilename(filename):
+    # split filename into components
+    components = filename.split('.')
+    
+    # if the file is not already in the new convention, update it
+    if components[1][0] == 'L':
+        data_type = components[1].split('_')
+        
+        # special case: the file is a VIIRS file: have to make use of data_type
+        if components[0][0] == 'V':
+            return '.'.join([
+                data_type[1] + '_' + util.ID_TO_NAME[components[0][0]],
+                GenerateTimestamp(components[0][1:]),
+                data_type[0],
+                data_type[-1],
+                'nc'
+                ])
+        # Aqua, Terra, SeaWifs
+        else:
+            return '.'.join([
+                util.ID_TO_NAME[components[0][0]],
+                GenerateTimestamp(components[0][1:]),
+                data_type[0],
+                data_type[-1],
+                'nc'
+                ])
+        
+    # else, return it
+    return filename
 
 def main():
     # what sattelites do we want
@@ -171,7 +206,7 @@ Because of that, instead of following the entire timespan, the following timespa
     # fetch filenames
     filenames = []
     for mission, requests in mission_to_requests.items():
-        print("Gathering", mission, "file download URLs...", end=' ')
+        print("Gathering", mission, "file download URLs...", end=' ', flush=True)
         for request in requests:
             filenames += GetDownloadURLs(*request)
         print("Gathered.")
@@ -179,11 +214,13 @@ Because of that, instead of following the entire timespan, the following timespa
     # put filenames in DB
     print("Inserting download URLs into database...", end=' ')
     for filename in filenames:
+        # fix name
+        name = GenFilename(filename.split('/')[-1])
         db_entry = {
-            "id": filename.split('/')[-1],
+            "id": name,
             "download_url": filename,
             "exists": 0,
-            "target": util.ProduceL3mFilename(filename.split('/')[-1])
+            "target": util.ProduceL3mFilename(name)
             }
         sql.InsertL2(db_entry)
     print("Done.")
