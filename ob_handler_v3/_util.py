@@ -40,6 +40,8 @@ MISSION_TO_SHORTNAMES = {
     "SNPP_VIIRS": ["VIIRSN_L2_OC", "VIIRSN_L2_SST", "VIIRSN_L2_SST3"]
     }
 
+PAGE_SIZE = 100
+
 # Returns OBPG file properties (mission, sensor, date, level and data type)
 def GetFileProperties(filename_with_extension):
 

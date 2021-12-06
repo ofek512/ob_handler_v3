@@ -22,10 +22,14 @@ NOTE 2: This script can be run during downloading/processing of data, to add mor
 """
 
 from datetime import datetime, timedelta
+from urllib.request import urlopen
+import pprint
+import json
 
 import _util as util
 import params
 import _sqlhandler as sql
+from math import ceil
 
 class Interval:
     def __init__(self, start, end):
@@ -67,12 +71,36 @@ def GetNumberOfFiles(shortname, timespan):
 
     return search_results["hits"]
 
-def GetDownloadURLs(request):
-    pass
+def GetDownloadURLs(shortname, timespan):
+
+    n_pages = ceil(GetNumberOfFiles(shortname, timespan)/util.PAGE_SIZE)
+
+    # page through the hits
+    hits = []
+    for i in range(1, n_pages+1):
+
+        request = f"https://cmr.earthdata.nasa.gov/search/granules.umm_json\
+?page_size={util.PAGE_SIZE}\
+&page_num={i}\
+&short_name={shortname}\
+&provider=OB_DAAC\
+&temporal={timespan}"
+    
+        response = urlopen(request)
+        search_results = json.loads(response.read())
+    
+        if not search_results["items"]:
+            print("Unexpected error occured. No items were found.")
+            pprint.pprint(search_results)
+            exit("Program terminated")
+
+        hits += [item["umm"]["RelatedUrls"][0]["URL"] for item in search_results["items"]]
+
+    return hits
 
 def main():
     # what sattelites do we want
-    missions = input(mission_prompt)
+    missions = input(util.mission_prompt)
     if missions == "":
         missions = params.default_missions
     missions = [util.ID_TO_NAME[id.upper()] for id in missions]
@@ -99,7 +127,6 @@ def main():
             # check if there's an overlap
             if file["date"] >= start_date and file["date"] <= end_date:
                 dates_by_mission[file["identifier"]].append(file["date"])
-
 
     #for item in dates_by_mission.items():
     #    print(item[0], [date.strftime("%Y-%m-%d") for date in dates_by_mission[item[0]]])
@@ -129,16 +156,16 @@ Because of that, instead of following the entire timespan, the following timespa
                 mission_to_requests[mission].append((shortname, str(i)))
 
     # check number of expected files to be downloaded
-    sum = 0
+    s = 0
     print("Counting number of files to be")
-    for mission, requests in mission_to_requests:
+    for mission, requests in mission_to_requests.items():
         print("Number of", mission, "files to be downloaded:", end=' ')
-        n = sum([GetNumberOfFiles(request) for request in requests])
-        sum += n
+        n = sum([GetNumberOfFiles(*request) for request in requests])
+        s += n
         print(n)
 
     # final green light
-    if input("Do you wanna queue", sum, "files to be downloaded? [Y/n]").lower() != 'y':
+    if input("Do you wanna queue", s, "files to be downloaded? [Y/n]").lower() != 'y':
         exit("Program terminated")
 
     # fetch filenames
