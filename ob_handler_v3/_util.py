@@ -8,6 +8,8 @@ Maintained by Lun Surdyaev lunvang@gmail.com
 import os
 from datetime import datetime
 
+import params
+
 # print messages
 mission_prompt = """Please type the identifiers of the missions you are interested in gathering data from.
 i.e. If you only want AQUA_MODIS, TERRA_MODIS, and SNPP_VIIRS data, type 'atn'.

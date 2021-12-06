@@ -219,7 +219,7 @@ Because of that, instead of following the entire timespan, the following timespa
         db_entry = {
             "id": name,
             "download_url": filename,
-            "exists": 0,
+            "file_exists": 0,
             "target": util.ProduceL3mFilename(name)
             }
         sql.InsertL2(db_entry)
