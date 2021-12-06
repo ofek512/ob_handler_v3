@@ -127,7 +127,6 @@ def InsertFiles(path, filetype):
 
         # else, try inserting the file
         else:
-            i = Exists("L3m_files", "gg")
             db_entry = FilenameToDict(item, path)
             fields, values = FormatEntry(db_entry)
 
