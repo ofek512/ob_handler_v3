@@ -21,6 +21,7 @@ NOTE: Only one instance of this script may be running at a time.
 
 # local imports
 import params
+import _util as util
 import _sqlhandler as sql
 import _webhandler as web
 
@@ -65,12 +66,14 @@ def main():
         for file in ready_files:
 
             # download the file into the data folder
+            print("Downloading", file[0] + "...", end=' ', flush=True)
             web.DownloadFile(file[1], params.path_to_data)
+            print("Done.")
 
             # rename and move the file into an appropriate subfolder
             
             # get file properties
-            properties = GetFileProperties(file[0])
+            properties = util.GetFileProperties(file[0])
         
             # determine the appropriate folder (MISSION_SENSOR)
             subfolder = params.path_to_data + properties["mission"] + '_' + properties["sensor"] + '/'
