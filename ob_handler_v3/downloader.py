@@ -85,5 +85,5 @@ def main():
 
     print("Downloader script terminated due to no files being queued up for downloading.")
 
-if __name == "__main__":
+if __name__ == "__main__":
     main()

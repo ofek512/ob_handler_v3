@@ -22,5 +22,5 @@ import _sqlhandler as sql
 def main():
     pass
 
-if __name == "__main__":
+if __name__ == "__main__":
     main()

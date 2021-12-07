@@ -181,6 +181,12 @@ Because of that, instead of following the entire timespan, the following timespa
     for filename in filenames:
         # fix name
         name = GenFilename(filename.split('/')[-1])
+
+        # if the file isn't in the timespan, don't queue it up
+        date = GetFileProperties(name)["date"]
+        if date > timespan.end or date < timespan.start:
+            continue
+
         db_entry = {
             "id": name,
             "download_url": filename,
