@@ -98,10 +98,10 @@ def GetUserInput():
     # what dates
     try:
         start_date = datetime.strptime(
-            input("Please put the start date from which you want the data, in the following format: YYYY-MM-DD.\n"),
+            input("Please put the start date from which you want the data, in the following format: YYYY-MM-DD.\nYour answer: "),
             "%Y-%m-%d")
         end_date   = datetime.strptime(
-            input("Please put the last date from which you want the data, in the following format: YYYY-MM-DD.\n"),
+            input("Please put the last date from which you want the data, in the following format: YYYY-MM-DD.\nYour answer: "),
             "%Y-%m-%d")
         timespan = Interval(start_date, end_date)
     except:
@@ -109,7 +109,7 @@ def GetUserInput():
         exit("Program terminated.")
         
     # priority
-    priority = int(input("Please specify the priority for this batch of files (1 - Highest, 5 - Lowest). Your answer: "))
+    priority = int(input("Please specify the priority for this batch of files (1 - Highest, 5 - Lowest).\nYour answer: "))
     if priority > 5 or priority < 1:
         print("Invalid priority.")
         exit("Program terminated.")
@@ -157,7 +157,7 @@ Because of that, instead of following the entire timespan, the following timespa
 
     # check number of expected files to be downloaded
     s = 0
-    print("Counting number of files to be")
+    print("Counting number of files to be downloaded...")
     for mission, requests in mission_to_requests.items():
         print("Number of", mission, "files to be downloaded:", end=' ')
         n = sum([web.GetNumberOfFiles(*request) for request in requests])
@@ -165,7 +165,7 @@ Because of that, instead of following the entire timespan, the following timespa
         print(n)
 
     # final green light
-    if input("Do you wanna queue " + str(s) + " files to be downloaded? [Y/n]").lower() != 'y':
+    if input("Do you wanna queue " + str(s) + " files to be downloaded? [Y/n] ").lower() != 'y':
         exit("Program terminated")
 
     # fetch filenames

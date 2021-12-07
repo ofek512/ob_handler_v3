@@ -20,7 +20,6 @@ t - TERRA_MODIS
 s - SeaStar_SeaWiFS
 j - JPSS1_VIIRS
 n - SNPP_VIIRS
-
 Your answer: """
 
 # sensor identifiers
@@ -42,7 +41,7 @@ MISSION_TO_SHORTNAMES = {
     "SNPP_VIIRS": ["VIIRSN_L2_OC", "VIIRSN_L2_SST", "VIIRSN_L2_SST3"]
     }
 
-PAGE_SIZE = 100
+PAGE_SIZE = 200
 
 # Returns OBPG file properties (mission, sensor, date, level and data type)
 def GetFileProperties(filename_with_extension):

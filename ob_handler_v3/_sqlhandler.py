@@ -55,10 +55,10 @@ select_ready_for_download = """ SELECT (id, download_url)
 insert_L2_processed = """   INSERT
                                 INTO L2_files ({0})
                                 VALUES ({1})"""
-insert_L2_unprocessed = """ INSERT
+insert_L2_unprocessed = """ INSERT OR IGNORE
                                 INTO L3m_files ({2})
                                 VALUES ({3});
-                            INSERT
+                            INSERT OR IGNORE
                                 INTO L2_files ({0})
                                 VALUES ({1});"""
 insert_L3m = """INSERT
@@ -154,7 +154,7 @@ def InsertL2(entry):
     else:
         entry["file_status"] = 1
         L3m_entry = {"id":entry["target"], "file_status":0}
-        Execute(insert_L2_unprocessed.format(*FormatEntry(entry)), *FormatEntry(L3m_entry))
+        Execute(insert_L2_unprocessed.format(*FormatEntry(entry), *FormatEntry(L3m_entry)))
 
 # insert files from a certain type and from a certain folder into the DB
 def InsertFiles(path, filetype):
@@ -173,6 +173,7 @@ def InsertFiles(path, filetype):
                 db_entry["priority"] = 4 # the default priority for L2 files that already exist
                 InsertL2(db_entry)
             else:
+                db_entry["file_status"] = 1
                 InsertL3m(db_entry)
 
 # get all existing files from a table
@@ -187,7 +188,7 @@ def GetReadyForDownload(limit):
 def QueueFile(entry):
     entry["file_status"] = 0
     L3m_entry = {"id":entry["target"], "file_status":0}
-    Execute(insert_L2_unprocessed.format(*FormatEntry(entry)), *FormatEntry(L3m_entry))
+    Execute(insert_L2_unprocessed.format(*FormatEntry(entry), *FormatEntry(L3m_entry)))
 
 # update the entry concerning the specified L2 file, when it has been downloaded
 def FileDownloaded(filename, location):
