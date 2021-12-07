@@ -6,8 +6,10 @@ db_filename = "file_management.db"
 default_missions = "atjns"
 
 # downloader parameters
+max_folder_size = 10 # TB
 folder_size_check_interval = 120 # minutes
 folder_size_check_timeout  = 12  # tries
+download_chunk_size = 100 # files
 
 # processor parameters
 data_availability_check_interval = 60 # minutes

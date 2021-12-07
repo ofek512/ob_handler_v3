@@ -1,7 +1,7 @@
 """
 SQL Handling Utility
 Created by Lun Surdyaev on 2021-12-04
-Last Updated on 2021-12-05
+Last Updated on 2021-12-06
 Maintained by Lun Surdyaev lunvang@gmail.com
 
 Description:
@@ -15,13 +15,14 @@ import _util as util
 
 import os
 import sqlite3
+from datetime import datetime
 
 # queries
 create_tables = """
 PRAGMA foreign_keys=ON;
 CREATE TABLE IF NOT EXISTS L3m_files (  id TEXT     PRIMARY KEY,
                                         location    TEXT,
-                                        file_exists INTEGER,
+                                        file_status INTEGER,
                                         created_at  TEXT,
                                         UNIQUE(id)
                                         );
@@ -29,18 +30,25 @@ CREATE TABLE IF NOT EXISTS L2_files (   id              TEXT PRIMARY KEY,
                                         download_url    TEXT,
                                         location        TEXT,
                                         target          TEXT,
-                                        file_exists     INTEGER,
+                                        file_status     INTEGER,
                                         created_at      TEXT,
                                         FOREIGN KEY (target) REFERENCES L3m_files(id),
                                         UNIQUE(id)
                                         );
 """
-count_files = "SELECT count() FROM {0} WHERE id='{1}'"
-select_existing = "SELECT id FROM {0} WHERE file_exists=1"
 
+# selection queries
+count_files = "SELECT count() FROM {0} WHERE id='{1}'"
+select_existing = "SELECT id FROM {0} WHERE file_status>0"
+select_ready_for_download = "SELECT (id, download_url) FROM L2_files WHERE file_status=0 LIMIT {0}"
+
+# insertion queries
 insert_L2 = """ INSERT OR IGNORE    INTO L3m_files ({2}) VALUES ({3});
                 INSERT OR IGNORE    INTO L2_files  ({0}) VALUES ({1});"""
 insert_L3m = "INSERT OR IGNORE INTO L3m_files ({0}) VALUES ({1})"
+
+# updating queries
+file_downloaded = "UPDATE L2_files SET location='{1}', file_status=1, created_at='{2}' WHERE id='{0}'"
 
 # execute a given query, and return a value according to the return_type argument
 def Execute(query, return_type = None):
@@ -88,7 +96,7 @@ def Exists(table, entry):
 # converts a filename into a dictionary containing all fields
 def FilenameToDict(filename, location):
     d = {"id": filename,
-         "file_exists": 1,
+         "file_status": 1,
          "location": location
          }
 
@@ -109,16 +117,19 @@ def FormatEntry(entry):
 
     return ','.join(formatted_entry.keys()), ','.join(formatted_entry.values())
 
+# insert a L3m file into the database
 def InsertL3m(entry):
     query = insert_L3m.format(*FormatEntry(entry))
     Execute(query)
     
+# insert a L2 file into the database
 def InsertL2(entry):
     # generate a L3m entry
-    L3m_entry = {"id":entry["target"], "file_exists":0}
+    L3m_entry = {"id":entry["target"], "file_status":0}
     query = insert_L2.format(*FormatEntry(entry), *FormatEntry(L3m_entry))
     Execute(query)
 
+# insert files from a certain type and from a certain folder into the DB
 def InsertFiles(path, filetype):
     filelist = os.listdir(path)
     for item in filelist:
@@ -136,8 +147,17 @@ def InsertFiles(path, filetype):
             else:
                 InsertL3m(db_entry)
 
+# get all existing files from a table
 def GetExisting(table):
     return [item[0] for item in Execute(select_existing.format(table), "list")]
+
+# get <limit> files that are ready to be downloaded
+def GetReadyForDownload(limit):
+    return Execute(select_ready_for_download.format(limit), "list")
+
+# update the entry concerning the specified L2 file, when it has been downloaded
+def FileDownloaded(filename, location):
+    Execute(file_downloaded.format(filename, location, datetime.now().strftime("%Y-%m-%d %H:%M")))
 
 if __name__ == "__main__":
     # if run as its own script, this produces the File Management Database

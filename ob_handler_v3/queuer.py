@@ -1,7 +1,7 @@
 """
 Sattelite Data Download Queuing Script
 Created by Lun Surdyaev on 2021-12-03
-Last Updated on 2021-12-05
+Last Updated on 2021-12-06
 Maintained by Lun Surdyaev lunvang@gmail.com
 
 Description:
@@ -219,7 +219,7 @@ Because of that, instead of following the entire timespan, the following timespa
         db_entry = {
             "id": name,
             "download_url": filename,
-            "file_exists": 0,
+            "file_status": 0,
             "target": util.ProduceL3mFilename(name)
             }
         sql.InsertL2(db_entry)
