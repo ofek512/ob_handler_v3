@@ -31,6 +31,7 @@ CREATE TABLE IF NOT EXISTS L2_files (   id              TEXT PRIMARY KEY,
                                         location        TEXT,
                                         target          TEXT,
                                         file_status     INTEGER,
+                                        priority        INTEGER,
                                         created_at      TEXT,
                                         FOREIGN KEY (target) REFERENCES L3m_files(id),
                                         UNIQUE(id)
@@ -38,17 +39,36 @@ CREATE TABLE IF NOT EXISTS L2_files (   id              TEXT PRIMARY KEY,
 """
 
 # selection queries
-count_files = "SELECT count() FROM {0} WHERE id='{1}'"
-select_existing = "SELECT id FROM {0} WHERE file_status>0"
-select_ready_for_download = "SELECT (id, download_url) FROM L2_files WHERE file_status=0 LIMIT {0}"
+count_files = """   SELECT count()
+                        FROM {0}
+                        WHERE id='{1}'"""
+select_existing = """   SELECT id
+                            FROM {0}
+                            WHERE file_status>0"""
+select_ready_for_download = """ SELECT (id, download_url)
+                                    FROM L2_files
+                                    WHERE file_status=0
+                                    ORDER BY priority ASC
+                                    LIMIT {0}"""
 
 # insertion queries
-insert_L2 = """ INSERT OR IGNORE    INTO L3m_files ({2}) VALUES ({3});
-                INSERT OR IGNORE    INTO L2_files  ({0}) VALUES ({1});"""
-insert_L3m = "INSERT OR IGNORE INTO L3m_files ({0}) VALUES ({1})"
+insert_L2_processed = """   INSERT
+                                INTO L2_files ({0})
+                                VALUES ({1})"""
+insert_L2_unprocessed = """ INSERT
+                                INTO L3m_files ({2})
+                                VALUES ({3});
+                            INSERT
+                                INTO L2_files ({0})
+                                VALUES ({1});"""
+insert_L3m = """INSERT
+                    INTO L3m_files ({0})
+                    VALUES ({1})"""
 
 # updating queries
-file_downloaded = "UPDATE L2_files SET location='{1}', file_status=1, created_at='{2}' WHERE id='{0}'"
+file_downloaded = """   UPDATE L2_files
+                            SET location='{1}', file_status=1, created_at='{2}'
+                            WHERE id='{0}'"""
 
 # execute a given query, and return a value according to the return_type argument
 def Execute(query, return_type = None):
@@ -96,7 +116,6 @@ def Exists(table, entry):
 # converts a filename into a dictionary containing all fields
 def FilenameToDict(filename, location):
     d = {"id": filename,
-         "file_status": 1,
          "location": location
          }
 
@@ -122,12 +141,20 @@ def InsertL3m(entry):
     query = insert_L3m.format(*FormatEntry(entry))
     Execute(query)
     
-# insert a L2 file into the database
+# insert an existing L2 file into the database
 def InsertL2(entry):
-    # generate a L3m entry
-    L3m_entry = {"id":entry["target"], "file_status":0}
-    query = insert_L2.format(*FormatEntry(entry), *FormatEntry(L3m_entry))
-    Execute(query)
+    # check if a target L3m entry exists
+
+    # if so, insert the L2 entry with file_status=2 ('processed')
+    if Exists("L3m_files", entry["target"]):
+        entry["file_status"] = 2
+        Execute(insert_L2_processed.format(*FormatEntry(entry)))
+
+    # otherwise, insert the L2 entry with file_status=1 ('unprocessed') and insert a L3m entry with file_status=0 ('missing')
+    else:
+        entry["file_status"] = 1
+        L3m_entry = {"id":entry["target"], "file_status":0}
+        Execute(insert_L2_unprocessed.format(*FormatEntry(entry)), *FormatEntry(L3m_entry))
 
 # insert files from a certain type and from a certain folder into the DB
 def InsertFiles(path, filetype):
@@ -143,6 +170,7 @@ def InsertFiles(path, filetype):
             db_entry = FilenameToDict(item, path)
 
             if filetype == "L2":
+                db_entry["priority"] = 4 # the default priority for L2 files that already exist
                 InsertL2(db_entry)
             else:
                 InsertL3m(db_entry)
@@ -154,6 +182,12 @@ def GetExisting(table):
 # get <limit> files that are ready to be downloaded
 def GetReadyForDownload(limit):
     return Execute(select_ready_for_download.format(limit), "list")
+
+# queue up a L2 file to be downloaded
+def QueueFile(entry):
+    entry["file_status"] = 0
+    L3m_entry = {"id":entry["target"], "file_status":0}
+    Execute(insert_L2_unprocessed.format(*FormatEntry(entry)), *FormatEntry(L3m_entry))
 
 # update the entry concerning the specified L2 file, when it has been downloaded
 def FileDownloaded(filename, location):

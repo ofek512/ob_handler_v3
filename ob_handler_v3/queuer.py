@@ -22,14 +22,11 @@ NOTE 2: This script can be run during downloading/processing of data, to add mor
 """
 
 from datetime import datetime, timedelta
-from urllib.request import urlopen
-import pprint
-import json
 
-import _util as util
 import params
+import _util as util
 import _sqlhandler as sql
-from math import ceil
+import _webhandler as web
 
 class Interval:
     def __init__(self, start, end):
@@ -54,49 +51,6 @@ class Interval:
     # a string representation, for search API
     def __str__(self):
         return self.start.strftime("%Y-%m-%d") + "," + (self.end + timedelta(1)).strftime("%Y-%m-%d")
-
-def GetNumberOfFiles(shortname, timespan):
-    request = f"https://cmr.earthdata.nasa.gov/search/granules.umm_json\
-?short_name={shortname}\
-&provider=OB_DAAC\
-&temporal={timespan}"
-
-    response = urlopen(request)
-    search_results = json.loads(response.read())
-
-    if not search_results["items"]:
-        print("Unexpected error occured. No files were found.")
-        pprint.pprint(search_results)
-        exit("Program terminated")
-
-    return search_results["hits"]
-
-def GetDownloadURLs(shortname, timespan):
-
-    n_pages = ceil(GetNumberOfFiles(shortname, timespan)/util.PAGE_SIZE)
-
-    # page through the hits
-    hits = []
-    for i in range(1, n_pages+1):
-
-        request = f"https://cmr.earthdata.nasa.gov/search/granules.umm_json\
-?page_size={util.PAGE_SIZE}\
-&page_num={i}\
-&short_name={shortname}\
-&provider=OB_DAAC\
-&temporal={timespan}"
-    
-        response = urlopen(request)
-        search_results = json.loads(response.read())
-    
-        if search_results["items"] is None:
-            print("Unexpected error occured. No items were found.")
-            pprint.pprint(search_results)
-            exit("Program terminated")
-
-        hits += [item["umm"]["RelatedUrls"][0]["URL"] for item in search_results["items"]]
-
-    return hits
 
 # converts a YYYYDDDHHMMSS date format into a YYYYMMDDTHHMMSS time format
 def GenerateTimestamp(ts):
@@ -133,7 +87,8 @@ def GenFilename(filename):
     # else, return it
     return filename
 
-def main():
+# prompts the user for data regarding the batch of files to be queued
+def GetUserInput():
     # what sattelites do we want
     missions = input(util.mission_prompt)
     if missions == "":
@@ -148,9 +103,22 @@ def main():
         end_date   = datetime.strptime(
             input("Please put the last date from which you want the data, in the following format: YYYY-MM-DD.\n"),
             "%Y-%m-%d")
+        timespan = Interval(start_date, end_date)
     except:
         print("An invalid date was entered.")
         exit("Program terminated.")
+        
+    # priority
+    priority = int(input("Please specify the priority for this batch of files (1 - Highest, 5 - Lowest). Your answer: "))
+    if priority > 5 or priority < 1:
+        print("Invalid priority.")
+        exit("Program terminated.")
+
+    return missions, timespan, priority
+
+def main():
+
+    missions, timespan, priority = GetUserInput()
 
     # check database for existing L3m data
     L3m_files = [util.GetFileProperties(file) for file in sql.GetExisting("L3m_files")]
@@ -160,17 +128,14 @@ def main():
     for file in L3m_files:
         if file["identifier"] in missions:
             # check if there's an overlap
-            if file["date"] >= start_date and file["date"] <= end_date:
+            if file["date"] >= timespan.start and file["date"] <= timespan.end:
                 dates_by_mission[file["identifier"]].append(file["date"])
-
-    #for item in dates_by_mission.items():
-    #    print(item[0], [date.strftime("%Y-%m-%d") for date in dates_by_mission[item[0]]])
 
     # fix overlap
     mission_to_requests = {mission:[] for mission in missions}
     for mission,dates in dates_by_mission.items():
         dates.sort()
-        intervals = [Interval(start_date, end_date)]
+        intervals = [timespan]
         for date in dates:
             i = intervals[-1]
             del intervals[-1]
@@ -195,7 +160,7 @@ Because of that, instead of following the entire timespan, the following timespa
     print("Counting number of files to be")
     for mission, requests in mission_to_requests.items():
         print("Number of", mission, "files to be downloaded:", end=' ')
-        n = sum([GetNumberOfFiles(*request) for request in requests])
+        n = sum([web.GetNumberOfFiles(*request) for request in requests])
         s += n
         print(n)
 
@@ -208,7 +173,7 @@ Because of that, instead of following the entire timespan, the following timespa
     for mission, requests in mission_to_requests.items():
         print("Gathering", mission, "file download URLs...", end=' ', flush=True)
         for request in requests:
-            filenames += GetDownloadURLs(*request)
+            filenames += web.GetDownloadURLs(*request)
         print("Gathered.")
 
     # put filenames in DB
@@ -219,10 +184,10 @@ Because of that, instead of following the entire timespan, the following timespa
         db_entry = {
             "id": name,
             "download_url": filename,
-            "file_status": 0,
-            "target": util.ProduceL3mFilename(name)
+            "target": util.ProduceL3mFilename(name),
+            "priority": priority
             }
-        sql.InsertL2(db_entry)
+        sql.QueueFile(db_entry)
     print("Done.")
 
 if __name__ == "__main__":

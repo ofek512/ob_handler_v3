@@ -22,7 +22,9 @@ NOTE: Only one instance of this script may be running at a time.
 # local imports
 import params
 import _sqlhandler as sql
+import _webhandler as web
 
+# external imports
 import os
 import time
 
@@ -54,7 +56,7 @@ def main():
         for file in ready_files:
 
             # download the file into the data folder
-            DownloadFile(file[1], params.path_to_data)
+            web.DownloadFile(file[1], params.path_to_data)
 
             # rename and move the file into an appropriate subfolder
             
