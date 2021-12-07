@@ -45,7 +45,7 @@ count_files = """   SELECT count()
 select_existing = """   SELECT id
                             FROM {0}
                             WHERE file_status>0"""
-select_ready_for_download = """ SELECT (id, download_url)
+select_ready_for_download = """ SELECT id, download_url
                                     FROM L2_files
                                     WHERE file_status=0
                                     ORDER BY priority ASC
@@ -97,7 +97,7 @@ def Execute(query, return_type = None):
             cur.execute("COMMIT")
 
         except conn.Error as error:
-            print("Error while processing transaction:", conn, error)
+            print("Error while processing transaction:", com, error)
             cur.execute("ROLLBACK")
 
         conn.close()
