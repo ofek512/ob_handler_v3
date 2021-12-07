@@ -83,7 +83,7 @@ def Execute(query, return_type = None):
         try:
             # execute all commands
             for com in commands:
-                print("Executing", com)
+                #print("Executing", com)
                 cur.execute(com)
 
             # decide on return value
@@ -97,7 +97,7 @@ def Execute(query, return_type = None):
             cur.execute("COMMIT")
 
         except conn.Error as error:
-            print("Error while processing transaction:", error)
+            print("Error while processing transaction:", conn, error)
             cur.execute("ROLLBACK")
 
         conn.close()
