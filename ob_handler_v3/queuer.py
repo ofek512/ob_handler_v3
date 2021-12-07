@@ -177,13 +177,13 @@ Because of that, instead of following the entire timespan, the following timespa
         print("Gathered.")
 
     # put filenames in DB
-    print("Inserting download URLs into database...", end=' ')
+    print("Inserting download URLs into database...", end=' ', flush=True)
     for filename in filenames:
         # fix name
         name = GenFilename(filename.split('/')[-1])
 
         # if the file isn't in the timespan, don't queue it up
-        date = GetFileProperties(name)["date"]
+        date = util.GetFileProperties(name)["date"]
         if date > timespan.end or date < timespan.start:
             continue
 

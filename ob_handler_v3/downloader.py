@@ -28,6 +28,15 @@ import _webhandler as web
 import os
 import time
 
+def FolderTooBig():
+    total_size = 0
+    for dirpath, dirnames, filenames in os.walk(params.path_to_data):
+        for f in filenames:
+            fp = os.path.join(dirpath, f)
+            total_size += os.path.getsize(fp)
+
+    return total_size > (params.max_folder_size * (2**40))
+
 def main():
 
     print("Downloader script started.")

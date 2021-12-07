@@ -83,7 +83,7 @@ def Execute(query, return_type = None):
         try:
             # execute all commands
             for com in commands:
-                #print("Executing", com)
+                print("Executing", com)
                 cur.execute(com)
 
             # decide on return value
@@ -202,5 +202,9 @@ if __name__ == "__main__":
 
     # cycle through all files in the data directory recursively and insert them into the DB (if they aren't there already)
     # this ordering is important, as inserting L2 files will check whether L3m files are in the database, and not on the disk itself.
+    print("Inserting L3m files...", end=' ', flush=True)
     InsertFiles(params.path_to_data+"L3m/", "L3m")
+    print("Done.")
+    print("Inserting L2 files...", end=' ', flush=True)
     InsertFiles(params.path_to_data+"L2/", "L2")
+    print("Done.")
