@@ -1,7 +1,7 @@
 """
 SQL Handling Utility
 Created by Lun Surdyaev on 2021-12-04
-Last Updated on 2021-12-06
+Last Updated on 2021-12-08
 Maintained by Lun Surdyaev lunvang@gmail.com
 
 Description:
@@ -20,10 +20,11 @@ from datetime import datetime
 # queries
 create_tables = """
 PRAGMA foreign_keys=ON;
-CREATE TABLE IF NOT EXISTS L3m_files (  id TEXT     PRIMARY KEY,
-                                        location    TEXT,
-                                        file_status INTEGER,
-                                        created_at  TEXT,
+CREATE TABLE IF NOT EXISTS L3m_files (  id TEXT         PRIMARY KEY,
+                                        location        TEXT,
+                                        file_status     INTEGER,
+                                        created_at      TEXT,
+                                        verifier_bit    INTEGER DEFAULT 0,
                                         UNIQUE(id)
                                         );
 CREATE TABLE IF NOT EXISTS L2_files (   id              TEXT PRIMARY KEY,
@@ -33,6 +34,7 @@ CREATE TABLE IF NOT EXISTS L2_files (   id              TEXT PRIMARY KEY,
                                         file_status     INTEGER,
                                         priority        INTEGER,
                                         created_at      TEXT,
+                                        verifier_bit    INTEGER DEFAULT 0,
                                         FOREIGN KEY (target) REFERENCES L3m_files(id),
                                         UNIQUE(id)
                                         );
@@ -50,6 +52,10 @@ select_ready_for_download = """ SELECT id, download_url
                                     WHERE file_status=0
                                     ORDER BY priority ASC
                                     LIMIT {0}"""
+select_unverified_existing = """ SELECT id
+                                    FROM {0}
+                                    WHERE verifier_bit=0
+                                        AND file_status>0"""
 
 # insertion queries
 insert_L2_processed = """   INSERT
@@ -69,6 +75,14 @@ insert_L3m = """INSERT
 file_downloaded = """   UPDATE L2_files
                             SET location='{1}', file_status=1, created_at='{2}'
                             WHERE id='{0}'"""
+update_status = """ UPDATE {0}
+                        SET status={2}
+                        WHERE id='{1}'"""
+verify_file = """   UPDATE {0}
+                        SET verifier_bit=1
+                        WHERE id='{1}'"""
+reset_verifier = """UPDATE {0}
+                        SET verifier_bit=0"""
 
 # execute a given query, and return a value according to the return_type argument
 def Execute(query, return_type = None):
@@ -83,7 +97,7 @@ def Execute(query, return_type = None):
         try:
             # execute all commands
             for com in commands:
-                print("Executing", com)
+                #print("Executing", com)
                 cur.execute(com)
 
             # decide on return value
@@ -193,6 +207,22 @@ def QueueFile(entry):
 # update the entry concerning the specified L2 file, when it has been downloaded
 def FileDownloaded(filename, location):
     Execute(file_downloaded.format(filename, location, datetime.now().strftime("%Y-%m-%d %H:%M")))
+
+# update the given file's status in the given table
+def UpdateStatus(table, filename):
+    Execute(update_status.format(table, filename, status))
+
+# set verifier_bit to 1
+def VerifyFile(table, filename):
+    Execute(verify_file.format(table, filename))
+
+# set all files's verifier_bit to 0
+def ResetVerifier(table):
+    Execute(reset_verifier.format(table))
+
+# get all files that fullfill verifier_bit=0 AND file_status>0:
+def GetUnverifiedExisting(table):
+    return [item[0] for item in Execute(select_unverified_existing.format(table), "list")]
 
 if __name__ == "__main__":
     # if run as its own script, this produces the File Management Database

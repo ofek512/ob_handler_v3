@@ -1,7 +1,7 @@
 """
 Sattelite Data Downloader Script
 Created by Lun Surdyaev on 2021-12-03
-Last Updated on 2021-12-06
+Last Updated on 2021-12-08
 Maintained by Lun Surdyaev lunvang@gmail.com
 
 Description:
@@ -76,7 +76,7 @@ def main():
             properties = util.GetFileProperties(file[0])
         
             # determine the appropriate folder (MISSION_SENSOR)
-            subfolder = params.path_to_data + properties["mission"] + '_' + properties["sensor"] + '/'
+            subfolder = params.path_to_data + "L2/" + properties["mission"] + '_' + properties["sensor"] + '/'
             
             # if the folder does not exist, create it
             if not os.path.isdir(subfolder):

@@ -1,7 +1,7 @@
 """
 Sattelite Data Download Queuing Script
 Created by Lun Surdyaev on 2021-12-03
-Last Updated on 2021-12-06
+Last Updated on 2021-12-07
 Maintained by Lun Surdyaev lunvang@gmail.com
 
 Description:

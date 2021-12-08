@@ -1,7 +1,7 @@
 """
 General Utility file
 Created by Lun Surdyaev on 2021-12-04
-Last Updated on 2021-12-05
+Last Updated on 2021-12-08
 Maintained by Lun Surdyaev lunvang@gmail.com
 """
 
@@ -41,7 +41,7 @@ MISSION_TO_SHORTNAMES = {
     "SNPP_VIIRS": ["VIIRSN_L2_OC", "VIIRSN_L2_SST", "VIIRSN_L2_SST3"]
     }
 
-PAGE_SIZE = 400
+PAGE_SIZE = 800
 
 # Returns OBPG file properties (mission, sensor, date, level and data type)
 def GetFileProperties(filename_with_extension):
