@@ -43,8 +43,6 @@ class Worker:
 
         self.busy = False
 
-# returns a list of L2 files that have the same target and are all downloaded, but not processed yet
-def GetTask():
     # returns a list of L2 files that have the same target and are all downloaded, but not processed yet
 def GetTask():
     
