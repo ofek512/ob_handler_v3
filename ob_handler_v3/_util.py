@@ -55,7 +55,7 @@ def GetFileProperties(filename_with_extension):
     level = components[2]
     
     properties = {
-        "mission": mission, 
+        "mission": mission,
         "sensor": sensor,
         "identifier": mission+'_'+sensor,
         "date": datetime.strptime(date, "%Y%m%d"),

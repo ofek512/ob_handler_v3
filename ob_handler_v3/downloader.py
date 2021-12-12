@@ -51,6 +51,7 @@ def main():
         while FolderTooBig():
             print("Data folder size exceeds", params.max_folder_size, "TB. Waiting", params.folder_size_check_interval, "minutes until next check.")
             print(timeout_counter, "tries left until program times out.")
+
             time.sleep(params.folder_size_check_interval*60)
 
             timeout_counter += 1
@@ -59,7 +60,6 @@ def main():
                 print("Downloader script terminated due to the data folder exceeding the permitted size for",
                       params.folder_size_check_interval*params.folder_size_check_timeout,
                       "minutes.")
-
 
         # download the next X files
         ready_files = sql.GetReadyForDownload(params.download_chunk_size)
@@ -76,7 +76,7 @@ def main():
             properties = util.GetFileProperties(file[0])
         
             # determine the appropriate folder (MISSION_SENSOR)
-            subfolder = params.path_to_data + "L2/" + properties["mission"] + '_' + properties["sensor"] + '/'
+            subfolder = params.path_to_data + "L2/" + properties["identifier"] + '/'
             
             # if the folder does not exist, create it
             if not os.path.isdir(subfolder):

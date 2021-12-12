@@ -200,7 +200,6 @@ def httpdl(server, request, localpath='.', outputfilename=None, ntries=5,
 
     return status
 
-
 def uncompressFile(compressed_file):
     """
     uncompress file
