@@ -20,7 +20,7 @@ from datetime import datetime
 # queries
 create_tables = """
 PRAGMA foreign_keys=ON;
-CREATE TABLE IF NOT EXISTS L3m_files (  id TEXT         PRIMARY KEY,
+CREATE TABLE IF NOT EXISTS L3m_files (  id              TEXT PRIMARY KEY,
                                         location        TEXT,
                                         file_status     INTEGER,
                                         created_at      TEXT,

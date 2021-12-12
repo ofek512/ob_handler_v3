@@ -15,3 +15,4 @@ download_chunk_size = 100 # files
 data_availability_check_interval = 60 # minutes
 data_availability_check_timeout  = 12 # tries
 resolution = "1km"
+threads = 8

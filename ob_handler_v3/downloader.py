@@ -17,7 +17,7 @@ If the folder size doesn't decrease after a certain time, the script will termin
 If all L2 files in the File Management System have been processed, the script will terminate.
 
 NOTE: Only one instance of this script may be running at a time.
-""" bonkers
+"""
 
 # local imports
 import params

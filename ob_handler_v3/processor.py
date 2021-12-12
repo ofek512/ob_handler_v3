@@ -17,10 +17,47 @@ NOTE: Only one instance of this script may be running at a time.
 """
 
 # local imports
+import _util as util
 import _sqlhandler as sql
+import params
+import time
+
+class Worker:
+    def __init__(self):
+        pass
+
+    def Execute(self, ):
+
+        self.busy = True
+
+        # l2bin
+
+        # l3mapgen
+
+        # if processing successful delete raw data (L2 & L3b)
+        if success:
+            pass
+            # delete files
+
+            # update DB
+
+        self.busy = False
+
+# returns a list of L2 files that have the same target and are all downloaded, but not processed yet
+def GetTask():
+    pass
 
 def main():
-    pass
+
+    workers = [Worker() for i in range(params.threads)]
+    ready_files = True
+    while ready_files:
+
+        for worker in workers:
+            if not worker.busy:
+                worker.Execute(GetTask())
+
+        time.sleep(util.PROCESSING_DELAY)
 
 if __name__ == "__main__":
     main()
