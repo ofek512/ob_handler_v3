@@ -52,6 +52,10 @@ select_ready_for_download = """ SELECT id, download_url
                                     WHERE file_status=0
                                     ORDER BY priority ASC
                                     LIMIT {0}"""
+select_ready_for_processing = """ SELECT id, file_status, target
+                                    FROM L2_files
+                                    ORDER BY priority ASC, target ASC
+                                    """ 
 select_unverified_existing = """ SELECT id
                                     FROM {0}
                                     WHERE verifier_bit=0
@@ -223,6 +227,9 @@ def ResetVerifier(table):
 # get all files that fullfill verifier_bit=0 AND file_status>0:
 def GetUnverifiedExisting(table):
     return [item[0] for item in Execute(select_unverified_existing.format(table), "list")]
+# get all files that are ready for processing
+def GetFilesReadyForProcessing():
+    return Execute(select_ready_for_processing, "list")
 
 if __name__ == "__main__":
     # if run as its own script, this produces the File Management Database
