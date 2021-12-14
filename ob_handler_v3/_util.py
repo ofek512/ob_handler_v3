@@ -38,13 +38,12 @@ MISSION_TO_SHORTNAMES = {
     "AQUA_MODIS": ["MODISA_L2_OC", "MODISA_L2_SST"],
     "TERRA_MODIS": ["MODIST_L2_OC", "MODIST_L2_SST"],
     "JPSS1_VIIRS": ["VIIRSJ1_L2_OC"],
-    "SNPP_VIIRS": ["VIIRSN_L2_OC", "VIIRSN_L2_SST", "VIIRSN_L2_SST3"]
+    "SNPP_VIIRS": ["VIIRSN_L2_OC", "VIIRSN_L2_SST"]
     }
 
 TYPE_TO_PRODUCT = {
     "OC": "chlor_a",
-    "SST": "sst",
-    "SST3": "sst3"
+    "SST": "sst"
     }
 
 PAGE_SIZE = 800

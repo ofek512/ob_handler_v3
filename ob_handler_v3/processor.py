@@ -177,7 +177,7 @@ def GetTask(forbidden_list):
             if checker:  # if checker is true, it means all the L2 in the list are downloaded and its ready to get processed.
                 return [item[0] for item in inner_list] # returning a list of all the relevant L2 files.
         print ("No list was found suited for processing... waiting 60 minutes.")
-        time.sleep(util.PROCESSING_DELAY)
+        time.sleep(util.PROCESSING_DELAY*60)
         print (params.data_availability_check_timeout - i - 1, "tries left.")
 
     print ("No batch of L2s with the same L3 target were all ready to be processed.")
