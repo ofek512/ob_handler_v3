@@ -40,7 +40,7 @@ class Worker(Thread): # a class of a worker, a sinle thread in our glorious mult
             try:
                 task = self.queue.get(block=True)
                 print("Worker", self.id, "given a task.")
-                self.Execute(','.join(task)) # executing said task
+                self.Execute(task) # executing said task
             except Exception as e:
                 print(datetime.now(), "Worker", self.id, "threw an exception:", e) 
             finally:
@@ -189,7 +189,7 @@ def main():
 
         task = GetTask()
 
-        tasks.put(task)
+        tasks.put(','.join(task))
 
     tasks.join()
 
