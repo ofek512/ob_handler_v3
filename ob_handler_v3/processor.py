@@ -62,7 +62,7 @@ class Worker(Thread): # a class of a worker, a sinle thread in our glorious mult
             os.mkdir(lb3_dir)
 
         # produce L3b filename
-        L3bFilename = lb3_dir + util.ProduceL3bFilename(L2_file_list[0]) # this is a specific path of an instance of L3b
+        L3b_filename = lb3_dir + util.ProduceL3bFilename(L2_file_list[0]) # this is a specific path of an instance of L3b
 
         # prepare input
         input_file = f"/tmp/{sensor_name}{data_type}_l2bin_temp_{props['date']}.txt" # *** need to ask lun again about the txt logic ***
@@ -74,7 +74,7 @@ class Worker(Thread): # a class of a worker, a sinle thread in our glorious mult
         args = [    # a list of all the vars needed for the sp.run() method.
             "l2bin", # method name
             f"ifile={input_file}", # location of where the txt file is
-            f"ofile={L3bFilename}", # destination path
+            f"ofile={L3b_filename}", # destination path
             f"l3bprod={util.TYPE_TO_PRODUCTS[props['type']]}",
             "resolution=1",
             "verbose=1"
@@ -83,7 +83,7 @@ class Worker(Thread): # a class of a worker, a sinle thread in our glorious mult
         print(datetime.now(), "Worker", self.id, "started binning", L3bFilename.split('/')[-1])
         sp.run(args, env=os.environ.copy(), stdout=sp.DEVNULL) 
 
-        # l3mapgen !!
+        # l3mapgen
 
         # if the L3m directory does not exist, create it
         if not os.path.isdir(params.path_to_data + "L3m/"):
@@ -98,12 +98,12 @@ class Worker(Thread): # a class of a worker, a sinle thread in our glorious mult
         if not os.path.isdir(type_subdirectory):
             os.mkdir(type_subdirectory)
 
-        L3mFilename = type_subdirectory + util.ProduceL3mFilename(L2_file_list[0])
+        L3m_filename = type_subdirectory + util.ProduceL3mFilename(L2_file_list[0])
         
         args = [
             "l3mapgen",
-            f"ifile={L3bFilename}",
-            f"ofile={L3mFilename}",
+            f"ifile={L3b_filename}",
+            f"ofile={L3m_filename}",
             f"product={util.TYPE_TO_PRODUCTS[props['type']]}",
             "resolution=1",
             "verbose=1",
@@ -115,14 +115,18 @@ class Worker(Thread): # a class of a worker, a sinle thread in our glorious mult
 
         # if processing successful delete raw data (L2 & L3b)
         if os.path.isfile(L3m_filename):
-            print(datetime.now(), "Worker", self.id, "finished mapping", L3bFilename.split('/')[-1], "now deleting input files.")
+
+            print(datetime.now(), "Worker", self.id, "finished mapping", L3b_filename.split('/')[-1], "now deleting input files.")
+
             # delete files
             for filename in L2_file_list:
-                os.remove() # *** dont we need to add path to os.remove() ***
+                os.remove(filename)
+            os.remove(L3b_filename)
             
             # update DB entries' statuses to 2 (processed)
             for filename in L2_file_list:
-                sql.UpdateStatus("L2_files", filename, 2)
+                sql.UpdateStatus("L2_files", filename.split('/')[-1], 2)
+
             # update L3m DB entry status to 1 (exists)
             sql.UpdateStatus("L3m_files", L3m_filename.split('/')[-1], 1)
 

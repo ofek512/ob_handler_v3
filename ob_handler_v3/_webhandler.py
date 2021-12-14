@@ -45,7 +45,7 @@ def GetNumberOfFiles(shortname, timespan):
     response = urlopen(request)
     search_results = json.loads(response.read())
 
-    if not search_results["items"]:
+    if search_results["items"] is None:
         print("Unexpected error occured. No files were found.")
         pprint.pprint(search_results)
         exit("Program terminated")
