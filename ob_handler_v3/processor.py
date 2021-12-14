@@ -167,6 +167,8 @@ def GetTask(forbidden_list):
                 inner_list = [] # initialising the litte list
 
         for inner_list in father_list: # checking for the first inner list that all of the L2s inside are downloaded.
+            if len(inner_list) == 0:
+                continue
             if util.ProduceL3mFilename(inner_list[0][0]) in forbidden_list:
                 continue
             for inner_list_info in inner_list:
