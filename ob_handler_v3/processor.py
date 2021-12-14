@@ -34,17 +34,21 @@ class Worker(Thread): # a class of a worker, a sinle thread in our glorious mult
         Thread.__init__(self)
         self.queue = queue
         self.id = id
+        self.target = None
 
     def run(self): # a method of a worker, the worker will be in an infinite loop. constantly search for a task to do.
         while True:
             try:
                 task = self.queue.get(block=True)
                 print("Worker", self.id, "given a task.")
+                self.target = util.ProduceL3mFilename(task[0])
                 self.Execute(task) # executing said task
             except Exception as e:
                 print(datetime.now(), "Worker", self.id, "threw an exception:", e) 
             finally:
+                self.target = None
                 self.queue.task_done()
+            time.sleep(1)
 
     def Execute(self, L2_file_list): # the method that processes the batch of L2s into L3b and then finally L3M.
 
@@ -69,7 +73,7 @@ class Worker(Thread): # a class of a worker, a sinle thread in our glorious mult
         L3b_filename = lb3_dir + util.ProduceL3bFilename(L2_file_list[0].split('/')[-1]) # this is a specific path of an instance of L3b
         
         # prepare input
-        input_file = f"/tmp/{props['identifier']}_l2bin_temp_{props['date'].strftime('%Y%d%m')}.txt" # *** need to ask lun again about the txt logic ***
+        input_file = f"/tmp/{props['identifier']}_{props['type']}_l2bin_temp_{props['date'].strftime('%Y%d%m')}.txt" # *** need to ask lun again about the txt logic ***
         f = open(input_file, 'w')
         for filename in L2_file_list: # a for that writes in a txt file the name and the path of each l2 in a new line
             f.write(filename+"\n")
@@ -80,8 +84,7 @@ class Worker(Thread): # a class of a worker, a sinle thread in our glorious mult
             f"ifile={input_file}", # location of where the txt file is
             f"ofile={L3b_filename}", # destination path
             f"l3bprod={util.TYPE_TO_PRODUCT[props['type']]}",
-            "resolution=1",
-            "verbose=1"
+            "resolution=1"
             ]
 
         print(datetime.now(), "Worker", self.id, "started binning", L3b_filename.split('/')[-1])
@@ -110,7 +113,6 @@ class Worker(Thread): # a class of a worker, a sinle thread in our glorious mult
             f"ofile={L3m_filename}",
             f"product={util.TYPE_TO_PRODUCT[props['type']]}",
             "resolution=1",
-            "verbose=1",
             "interp=area"
             ]
         
@@ -147,7 +149,7 @@ def LoadEnvVariables():
     os.environ = env
 
 # returns a list of L2 files that have the same target and are all downloaded, but not processed yet
-def GetTask():
+def GetTask(forbidden_list):
     
     for i in range(params.data_availability_check_timeout):
         # creating a list that contains small lists that in each list, all the L2s have the same L3 "target"
@@ -163,7 +165,10 @@ def GetTask():
                 target_check = list_info[2]
                 father_list.append(inner_list[:]) # inserting the little list into the father list we used [:] so it wont be a reference but the obj itself!
                 inner_list = [] # initialising the litte list
+
         for inner_list in father_list: # checking for the first inner list that all of the L2s inside are downloaded.
+            if util.ProduceL3mFilename(inner_list[0]) in forbidden_list:
+                continue
             for inner_list_info in inner_list:
                 if inner_list_info[1] != 1: # [1] is the file status. 0 not downloaded 1 downloaded 2 processed
                     checker = False
@@ -181,13 +186,16 @@ def main():
     LoadEnvVariables()
 
     tasks = Queue()
+    workers = []
     for i in range(params.threads):
         worker = Worker(tasks, i)
         worker.start()
+        workers.append(worker)
 
     while sql.ThereAreUnprocessedFiles():
 
-        task = GetTask()
+        forbidden_list = [worker.target for worker in workers]
+        task = GetTask(forbidden_list)
 
         tasks.put(task)
 
