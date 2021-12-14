@@ -41,6 +41,11 @@ MISSION_TO_SHORTNAMES = {
     "SNPP_VIIRS": ["VIIRSN_L2_OC", "VIIRSN_L2_SST", "VIIRSN_L2_SST3"]
     }
 
+TYPE_TO_PRODUCT = {
+    "OC": "chlor_a",
+    "SST": "sst"
+    }
+
 PAGE_SIZE = 800
 
 PROCESSING_DELAY = 10 # seconds
@@ -66,14 +71,20 @@ def GetFileProperties(filename_with_extension):
     
     # some properties are only relevant for L3 data
     if level == "L2":
-        properties["type"] = components[3]
+        properties["type"] = components[3] # usually OC or SST
     else:
-        properties["period"] = components[3]
-        properties["type"] = components[4]
-        properties["resolution"] = components[5]
+        properties["period"] = components[3] # usually DAY
+        properties["type"] = components[4] # usually OC or SST
+        properties["resolution"] = components[5] # usually 1km
     
     return properties
 
+def ProduceL3bFilename(L2_filename):
+    p = GetFileProperties(L2_filename)
+    p["date"] = p["date"].strftime("%Y%d%m")
+    return f"{p['mission']}_{p['sensor']}.{p['date']}.L3b.DAY.{p['type']}.{params.resolution}.nc"
+
 def ProduceL3mFilename(L2_filename):
     p = GetFileProperties(L2_filename)
+    p["date"] = p["date"].strftime("%Y%d%m")
     return f"{p['mission']}_{p['sensor']}.{p['date']}.L3m.DAY.{p['type']}.{params.resolution}.nc"

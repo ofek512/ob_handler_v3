@@ -60,6 +60,9 @@ select_unverified_existing = """ SELECT id
                                     FROM {0}
                                     WHERE verifier_bit=0
                                         AND file_status>0"""
+get_file_location = """ SELECT location
+                            FROM {0}
+                            WHERE id='{1}'"""
 
 # insertion queries
 insert_L2_processed = """   INSERT
@@ -213,7 +216,7 @@ def FileDownloaded(filename, location):
     Execute(file_downloaded.format(filename, location, datetime.now().strftime("%Y-%m-%d %H:%M")))
 
 # update the given file's status in the given table
-def UpdateStatus(table, filename):
+def UpdateStatus(table, filename, status):
     Execute(update_status.format(table, filename, status))
 
 # set verifier_bit to 1
@@ -227,9 +230,13 @@ def ResetVerifier(table):
 # get all files that fullfill verifier_bit=0 AND file_status>0:
 def GetUnverifiedExisting(table):
     return [item[0] for item in Execute(select_unverified_existing.format(table), "list")]
+
 # get all files that are ready for processing
 def GetFilesReadyForProcessing():
     return Execute(select_ready_for_processing, "list")
+
+def GetFileLocation(table, filename):
+    return Execute(get_file_location.format(table, filename), "scalar")
 
 if __name__ == "__main__":
     # if run as its own script, this produces the File Management Database

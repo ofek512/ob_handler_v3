@@ -31,7 +31,7 @@ import time
 
 def FolderTooBig():
     total_size = 0
-    for dirpath, dirnames, filenames in os.walk(params.path_to_data): #for every non directory in the path_to_data, add the size of said non directory into total_size
+    for dirpath, dirnames, filenames in os.walk(params.path_to_data): # for every non directory in the path_to_data, add the size of said non directory into total_size
         for f in filenames:
             fp = os.path.join(dirpath, f) # full path of an instance of a non directory in all of the non directories 
             total_size += os.path.getsize(fp) 
@@ -42,7 +42,7 @@ def main():
 
     print("Downloader script started.")
 
-    ready_files = True # *** need to add a check if there are files not ready for download so we can close the loop***
+    ready_files = True
     while ready_files:
 
         timeout_counter = 0
