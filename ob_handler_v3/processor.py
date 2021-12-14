@@ -27,6 +27,7 @@ from threading import Thread
 from datetime import datetime
 import os
 import time
+import json
 
 class Worker(Thread): # a class of a worker, a sinle thread in our glorious multi threading processing!
     def __init__(self, queue, id):
