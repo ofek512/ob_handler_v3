@@ -111,14 +111,14 @@ class Worker(Thread): # a class of a worker, a sinle thread in our glorious mult
             ]
         
         print(datetime.now(), "Worker", self.id, "started mapping", L3bFilename.split('/')[-1])
-        sp.run(args, env=os.environ.copy(), stdout=sp.DEVNULL)
+        sp.run(args, env=os.environ.copy(), stdout=sp.DEVNULL) # 
 
         # if processing successful delete raw data (L2 & L3b)
         if os.path.isfile(L3m_filename):
             print(datetime.now(), "Worker", self.id, "finished mapping", L3bFilename.split('/')[-1], "now deleting input files.")
             # delete files
             for filename in L2_file_list:
-                os.remove()
+                os.remove() # *** dont we need to add path to os.remove() ***
             
             # update DB entries' statuses to 2 (processed)
             for filename in L2_file_list:
