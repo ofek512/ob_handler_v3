@@ -43,7 +43,8 @@ MISSION_TO_SHORTNAMES = {
 
 TYPE_TO_PRODUCT = {
     "OC": "chlor_a",
-    "SST": "sst"
+    "SST": "sst",
+    "SST3": "sst3"
     }
 
 PAGE_SIZE = 800

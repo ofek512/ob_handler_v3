@@ -53,12 +53,11 @@ class Worker(Thread): # a class of a worker, a sinle thread in our glorious mult
 
         # get general properties about this batch
         props = util.GetFileProperties(L2_file_list[0])
-        print("a")
+
         # add full path to L2 filenames
         L2_location = sql.GetFileLocation("L2_files", L2_file_list[0]) # the reason we took the first L2 file in the list is because all of them are in the same location.
         L2_file_list = [L2_location+filename for filename in L2_file_list] # we now add to each member of the list, his path so he can be acessed and processed. 
         
-        print("b")
         # l2bin !!
 
         # if the L3b directory does not exist, create it
@@ -66,11 +65,9 @@ class Worker(Thread): # a class of a worker, a sinle thread in our glorious mult
         if not os.path.isdir(lb3_dir): # this is where all the L3b files will be.
             os.mkdir(lb3_dir)
             
-        print("c")
         # produce L3b filename
-        L3b_filename = lb3_dir + util.ProduceL3bFilename(L2_file_list[0]) # this is a specific path of an instance of L3b
+        L3b_filename = lb3_dir + util.ProduceL3bFilename(L2_file_list[0].split('/')[-1]) # this is a specific path of an instance of L3b
         
-        print("d")
         # prepare input
         input_file = f"/tmp/{props['identifier']}_l2bin_temp_{props['date']}.txt" # *** need to ask lun again about the txt logic ***
         f = open(input_file, 'w')
@@ -82,7 +79,7 @@ class Worker(Thread): # a class of a worker, a sinle thread in our glorious mult
             "l2bin", # method name
             f"ifile={input_file}", # location of where the txt file is
             f"ofile={L3b_filename}", # destination path
-            f"l3bprod={util.TYPE_TO_PRODUCTS[props['type']]}",
+            f"l3bprod={util.TYPE_TO_PRODUCT[props['type']]}",
             "resolution=1",
             "verbose=1"
             ]
@@ -105,7 +102,7 @@ class Worker(Thread): # a class of a worker, a sinle thread in our glorious mult
         if not os.path.isdir(type_subdirectory):
             os.mkdir(type_subdirectory)
 
-        L3m_filename = type_subdirectory + util.ProduceL3mFilename(L2_file_list[0])
+        L3m_filename = type_subdirectory + util.ProduceL3mFilename(L2_file_list[0].split('/')[-1])
         
         args = [
             "l3mapgen",
