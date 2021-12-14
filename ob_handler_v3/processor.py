@@ -69,7 +69,7 @@ class Worker(Thread): # a class of a worker, a sinle thread in our glorious mult
         L3b_filename = lb3_dir + util.ProduceL3bFilename(L2_file_list[0].split('/')[-1]) # this is a specific path of an instance of L3b
         
         # prepare input
-        input_file = f"/tmp/{props['identifier']}_l2bin_temp_{props['date']}.txt" # *** need to ask lun again about the txt logic ***
+        input_file = f"/tmp/{props['identifier']}_l2bin_temp_{props['date'].strftime('%Y%d%m')}.txt" # *** need to ask lun again about the txt logic ***
         f = open(input_file, 'w')
         for filename in L2_file_list: # a for that writes in a txt file the name and the path of each l2 in a new line
             f.write(filename+"\n")
@@ -83,8 +83,8 @@ class Worker(Thread): # a class of a worker, a sinle thread in our glorious mult
             "resolution=1",
             "verbose=1"
             ]
-        
-        print(datetime.now(), "Worker", self.id, "started binning", L3bFilename.split('/')[-1])
+
+        print(datetime.now(), "Worker", self.id, "started binning", L3b_filename.split('/')[-1])
         sp.run(args, env=os.environ.copy(), stdout=sp.DEVNULL) 
 
         # l3mapgen
@@ -108,13 +108,13 @@ class Worker(Thread): # a class of a worker, a sinle thread in our glorious mult
             "l3mapgen",
             f"ifile={L3b_filename}",
             f"ofile={L3m_filename}",
-            f"product={util.TYPE_TO_PRODUCTS[props['type']]}",
+            f"product={util.TYPE_TO_PRODUCT[props['type']]}",
             "resolution=1",
             "verbose=1",
             "interp=area"
             ]
         
-        print(datetime.now(), "Worker", self.id, "started mapping", L3bFilename.split('/')[-1])
+        print(datetime.now(), "Worker", self.id, "started mapping", L3b_filename.split('/')[-1])
         sp.run(args, env=os.environ.copy(), stdout=sp.DEVNULL) # 
 
         # if processing successful delete raw data (L2 & L3b)
