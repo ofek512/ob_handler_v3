@@ -49,10 +49,10 @@ class Worker(Thread): # a class of a worker, a sinle thread in our glorious mult
     def Execute(self, L2_file_list): # the method that processes the batch of L2s into L3b and then finally L3M.
 
         # turn L2_file_list into list
-        L2_file_list = L2_file_list.split(',')
+        #L2_file_list = L2_file_list.split(',')
 
         # get general properties about this batch
-        props = util.GetFileProperties(L2_file_list)
+        props = util.GetFileProperties(L2_file_list[0])
 
         # add full path to L2 filenames
         L2_location = sql.GetFileLocation("L2_files", L2_file_list[0]) # the reason we took the first L2 file in the list is because all of them are in the same location.
@@ -189,7 +189,7 @@ def main():
 
         task = GetTask()
 
-        tasks.put(','.join(task))
+        tasks.put(task)
 
     tasks.join()
 
