@@ -84,7 +84,7 @@ class Worker(Thread): # a class of a worker, a sinle thread in our glorious mult
             "verbose=1"
             ]
         
-        print(datetime.now(), "Worker", self.id, "started binning", L3bFilename.split('/')[-1])
+        print(datetime.now(), "Worker", self.id, "started binning", L3b_filename.split('/')[-1])
         sp.run(args, env=os.environ.copy(), stdout=sp.DEVNULL) 
 
         # l3mapgen
@@ -114,7 +114,7 @@ class Worker(Thread): # a class of a worker, a sinle thread in our glorious mult
             "interp=area"
             ]
         
-        print(datetime.now(), "Worker", self.id, "started mapping", L3bFilename.split('/')[-1])
+        print(datetime.now(), "Worker", self.id, "started mapping", L3b_filename.split('/')[-1])
         sp.run(args, env=os.environ.copy(), stdout=sp.DEVNULL) # 
 
         # if processing successful delete raw data (L2 & L3b)
