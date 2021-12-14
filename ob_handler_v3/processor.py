@@ -182,7 +182,7 @@ def main():
         worker = Worker(tasks, i)
         worker.start()
 
-    while ThereAreUnprocessedFiles():
+    while sql.ThereAreUnprocessedFiles():
 
         task = GetTask()
 

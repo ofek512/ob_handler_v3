@@ -44,6 +44,9 @@ CREATE TABLE IF NOT EXISTS L2_files (   id              TEXT PRIMARY KEY,
 count_files = """   SELECT count()
                         FROM {0}
                         WHERE id='{1}'"""
+count_unprocessed_files = """   SELECT count()
+                                    FROM L2_files
+                                    WHERE file_status=1"""
 select_existing = """   SELECT id
                             FROM {0}
                             WHERE file_status>0"""
@@ -237,6 +240,10 @@ def GetFilesReadyForProcessing():
 
 def GetFileLocation(table, filename):
     return Execute(get_file_location.format(table, filename), "scalar")
+
+# returns false if and only if the database doesn't contain any L2 files with status 1
+def ThereAreUnprocessedFiles():
+    return bool(Execute(count_unprocessed_files, "scalar"))
 
 if __name__ == "__main__":
     # if run as its own script, this produces the File Management Database
