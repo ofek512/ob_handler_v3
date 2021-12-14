@@ -40,13 +40,16 @@ class Worker(Thread): # a class of a worker, a sinle thread in our glorious mult
             try:
                 task = self.queue.get(block=True)
                 print("Worker", self.id, "given a task.")
-                self.Execute(task) # executing said task
+                self.Execute(',',join(task)) # executing said task
             except Exception as e:
                 print(datetime.now(), "Worker", self.id, "threw an exception:", e) 
             finally:
                 self.queue.task_done()
 
     def Execute(self, L2_file_list): # the method that processes the batch of L2s into L3b and then finally L3M.
+
+        # turn L2_file_list into list
+        L2_file_list = L2_file_list.split(',')
 
         # get general properties about this batch
         props = util.GetFileProperties(L2_file_list)
