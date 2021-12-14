@@ -1,7 +1,7 @@
 """
 General Utility file
 Created by Lun Surdyaev on 2021-12-04
-Last Updated on 2021-12-08
+Last Updated on 2021-12-13
 Maintained by Lun Surdyaev lunvang@gmail.com
 """
 

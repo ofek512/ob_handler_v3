@@ -1,7 +1,7 @@
 """
 Web Handling Helper Script
 Created by Lun Surdyaev on 2021-12-07
-Last updated on 2021-12-07
+Last updated on 2021-12-14
 Maintained by Lun Surdyaev lunvang@gmail.com
 
 Description:
@@ -10,6 +10,7 @@ This file contains functions that deal with web accesses, from API calls to down
 
 # local imports
 import _util as util
+import params
 
 # external
 from urllib.request import urlopen
@@ -30,10 +31,9 @@ import time
 import textwrap
 from pathlib import Path
 
+# download parameters - do not touch!
 DEFAULT_CHUNK_SIZE = 131072
-
-# requests session object used to keep connections around
-obpgSession = None
+obpgSession = None # requests session object used to keep connections around
 
 # get the number of L2 files corresponding to the provided shortname and timespan
 def GetNumberOfFiles(shortname, timespan):
@@ -255,13 +255,4 @@ def RetrieveURL(request, localpath, appkey):
 
 # download the file specified by the download URL, and rename it to the specified name
 def DownloadFile(download_url, download_location):
-
-    # download file
-    status = RetrieveURL(download_url, download_location, "6d5b459daa8cfab9462d3e893ee09e0e052cfe92")
-
-    # check status
-    if status:
-        if status == 304:
-            print(request, "is not newer than local copy, skipping download")
-        else:
-            print(f"Whoops... problem retrieving {request} (received status {status})")
+    return RetrieveURL(download_url, download_location, params.appkey)

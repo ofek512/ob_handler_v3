@@ -1,7 +1,7 @@
 """
 Sattelite Data Downloader Script
 Created by Lun Surdyaev on 2021-12-03
-Last Updated on 2021-12-08
+Last Updated on 2021-12-14
 Maintained by Lun Surdyaev lunvang@gmail.com
 
 Description:
@@ -67,7 +67,18 @@ def main():
 
             # download the file into the data folder
             print("Downloading", file[0] + "...", end=' ', flush=True)
-            web.DownloadFile(file[1], params.path_to_data) # sending the DownloadFile method, the download url and also giving it a download path.
+            status = web.DownloadFile(file[1], params.path_to_data) # sending the DownloadFile method, the download url and also giving it a download path.
+
+            # status=0 means all good, otherwise an exception was encountered.
+            # status=304 means the file already exists on the disk - this should never happen
+            if status == 304:
+                print("Already exists on disk.")
+                continue
+            elif status != 0:
+                print("Failed. Skipping to next file.")
+                continue
+
+            # if all good
             print("Done.")
 
             # rename and move the file into an appropriate subfolder
