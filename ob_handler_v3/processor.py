@@ -28,61 +28,62 @@ from datetime import datetime
 import os
 import time
 
-class Worker(Thread):
+class Worker(Thread): # a class of a worker, a sinle thread in our glorious multi threading processing!
     def __init__(self, queue, id):
         Thread.__init__(self)
         self.queue = queue
         self.id = id
 
-    def run(self):
+    def run(self): # a method of a worker, the worker will be in an infinite loop. constantly search for a task to do.
         while True:
             try:
                 task = self.queue.get(block=True)
                 print("Worker", self.id, "given a task.")
-                self.Execute(task)
+                self.Execute(task) # executing said task
             except Exception as e:
-                print(datetime.now(), "Worker", self.id, "threw an exception:", e)
+                print(datetime.now(), "Worker", self.id, "threw an exception:", e) 
             finally:
                 self.queue.task_done()
 
-    def Execute(self, L2_file_list):
+    def Execute(self, L2_file_list): # the method that processes the batch of L2s into L3b and then finally L3M.
 
         # get general properties about this batch
         props = util.GetFileProperties(L2_file_list)
 
         # add full path to L2 filenames
-        L2_location = sql.GetFileLocation("L2_files", L2_file_list[0])
-        L2_file_list = [L2_location+filename for filename in L2_file_list]
+        L2_location = sql.GetFileLocation("L2_files", L2_file_list[0]) # the reason we took the first L2 file in the list is because all of them are in the same location.
+        L2_file_list = [L2_location+filename for filename in L2_file_list] # we now add to each member of the list, his path so he can be acessed and processed. 
 
-        # l2bin
+        # l2bin !!
 
         # if the L3b directory does not exist, create it
-        if not os.path.isdir(params.path_to_data + "L3b/"):
-            os.mkdir(params.path_to_data + "L3b/")
+        lb3_dir = params.path_to_data + "L3b/" # (ofek) i added this so there wont be any unnecessary extra letters D:
+        if not os.path.isdir(lb3_dir): # this is where all the L3b files will be.
+            os.mkdir(lb3_dir)
 
         # produce L3b filename
-        L3bFilename = params.path_to_data + "L3b/" + util.ProduceL3bFilename(L2_file_list[0])
+        L3bFilename = lb3_dir + util.ProduceL3bFilename(L2_file_list[0]) # this is a specific path of an instance of L3b
 
         # prepare input
-        input_file = f"/tmp/{sensor_name}{data_type}_l2bin_temp_{props['date']}.txt"
+        input_file = f"/tmp/{sensor_name}{data_type}_l2bin_temp_{props['date']}.txt" # *** need to ask lun again about the txt logic ***
         f = open(input_file, 'w')
-        for filename in L2_file_list:
+        for filename in L2_file_list: # a for that writes in a txt file the name and the path of each l2 in a new line
             f.write(filename+"\n")
         f.close()
 
-        args = [
-            "l2bin",
-            f"ifile={input_file}",
-            f"ofile={L3bFilename}",
+        args = [    # a list of all the vars needed for the sp.run() method.
+            "l2bin", # method name
+            f"ifile={input_file}", # location of where the txt file is
+            f"ofile={L3bFilename}", # destination path
             f"l3bprod={util.TYPE_TO_PRODUCTS[props['type']]}",
             "resolution=1",
             "verbose=1"
             ]
         
         print(datetime.now(), "Worker", self.id, "started binning", L3bFilename.split('/')[-1])
-        sp.run(args, env=os.environ.copy(), stdout=sp.DEVNULL)
+        sp.run(args, env=os.environ.copy(), stdout=sp.DEVNULL) 
 
-        # l3mapgen
+        # l3mapgen !!
 
         # if the L3m directory does not exist, create it
         if not os.path.isdir(params.path_to_data + "L3m/"):
