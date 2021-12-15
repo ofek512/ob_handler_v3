@@ -43,7 +43,7 @@ def main():
 
     for file in all_files:
 
-        properties = util.GetFileProperties(file[0])
+        properties = util.GetFileProperties(file)
         if properties["date"] >= start_date and properties["date"] <= end_date:
             sql.UpdatePriority("L2_files",file ,priority)
     
