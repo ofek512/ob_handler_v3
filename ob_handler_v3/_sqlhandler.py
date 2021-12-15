@@ -47,6 +47,11 @@ count_files = """   SELECT count()
 count_unprocessed_files = """   SELECT count()
                                     FROM L2_files
                                     WHERE file_status=1"""
+count_existing = """SELECT count()
+                        FROM {0}
+                        WHERE id='{1}'
+                            AND file_status>0
+                    """
 select_existing = """   SELECT id
                             FROM {0}
                             WHERE file_status>0"""
@@ -140,6 +145,10 @@ def Execute(query, return_type = None):
 def Exists(table, entry):
     return bool(Execute(count_files.format(table, entry), "scalar"))
 
+# checks if an entry exists in a table with status > 0
+def ExistsOnDisk(table, entry):
+    return bool(Execute(count_existing.format(table, entry), "scalar"))
+
 # converts a filename into a dictionary containing all fields
 def FilenameToDict(filename, location):
     d = {"id": filename,
@@ -173,7 +182,7 @@ def InsertL2(entry):
     # check if a target L3m entry exists
 
     # if so, insert the L2 entry with file_status=2 ('processed')
-    if Exists("L3m_files", entry["target"]):
+    if ExistsOnDisk("L3m_files", entry["target"]):
         entry["file_status"] = 2
         Execute(insert_L2_processed.format(*FormatEntry(entry)))
 
