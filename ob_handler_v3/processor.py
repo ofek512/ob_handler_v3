@@ -64,12 +64,12 @@ class Worker(Thread): # a class of a worker, a sinle thread in our glorious mult
         # l2bin !!
 
         # if the L3b directory does not exist, create it
-        lb3_dir = params.path_to_data + "L3b/" # (ofek) i added this so there wont be any unnecessary extra letters D:
-        if not os.path.isdir(lb3_dir): # this is where all the L3b files will be.
-            os.mkdir(lb3_dir)
+        L3b_dir = params.path_to_data + "L3b/" # (ofek) i added this so there wont be any unnecessary extra letters D:
+        if not os.path.isdir(L3b_dir): # this is where all the L3b files will be.
+            os.mkdir(L3b_dir)
             
         # produce L3b filename
-        L3b_filename = lb3_dir + util.ProduceL3bFilename(L2_file_list[0].split('/')[-1]) # this is a specific path of an instance of L3b
+        L3b_fullpath = L3b_dir + util.ProduceL3bFilename(L2_file_list[0].split('/')[-1]) # this is a specific path of an instance of L3b
         
         # prepare input
         input_file = f"/tmp/{props['identifier']}_{props['type']}_l2bin_temp_{props['date'].strftime('%Y%d%m')}.txt" # *** need to ask lun again about the txt logic ***
@@ -81,12 +81,12 @@ class Worker(Thread): # a class of a worker, a sinle thread in our glorious mult
         args = [    # a list of all the vars needed for the sp.run() method.
             "l2bin", # method name
             f"ifile={input_file}", # location of where the txt file is
-            f"ofile={L3b_filename}", # destination path
+            f"ofile={L3b_fullpath}", # destination path
             f"l3bprod={util.TYPE_TO_PRODUCT[props['type']]}",
             "resolution=1"
             ]
 
-        print(datetime.now(), "Worker", self.id, "started binning", L3b_filename.split('/')[-1])
+        print(datetime.now(), "Worker", self.id, "started binning", L3b_fullpath.split('/')[-1])
         sp.run(args, env=os.environ.copy(), stdout=sp.DEVNULL) 
 
         # l3mapgen
@@ -104,36 +104,36 @@ class Worker(Thread): # a class of a worker, a sinle thread in our glorious mult
         if not os.path.isdir(type_subdirectory):
             os.mkdir(type_subdirectory)
 
-        L3m_filename = type_subdirectory + util.ProduceL3mFilename(L2_file_list[0].split('/')[-1])
+        L3m_fullpath = type_subdirectory + util.ProduceL3mFilename(L2_file_list[0].split('/')[-1])
         
         args = [
             "l3mapgen",
-            f"ifile={L3b_filename}",
-            f"ofile={L3m_filename}",
+            f"ifile={L3b_fullpath}",
+            f"ofile={L3m_fullpath}",
             f"product={util.TYPE_TO_PRODUCT[props['type']]}",
             "resolution=1km",
             "interp=area"
             ]
         
-        print(datetime.now(), "Worker", self.id, "started mapping", L3m_filename.split('/')[-1])
+        print(datetime.now(), "Worker", self.id, "started mapping", L3m_fullpath.split('/')[-1])
         sp.run(args, env=os.environ.copy(), stdout=sp.DEVNULL) # 
 
         # if processing successful delete raw data (L2 & L3b)
-        if os.path.isfile(L3m_filename):
+        if os.path.isfile(L3m_fullpath):
 
-            print(datetime.now(), "Worker", self.id, "finished mapping", L3m_filename.split('/')[-1], "now deleting input files.")
+            print(datetime.now(), "Worker", self.id, "finished mapping", L3m_fullpath.split('/')[-1], "now deleting input files.")
 
             # delete files
             for filename in L2_file_list:
                 os.remove(filename)
-            os.remove(L3b_filename)
+            os.remove(L3b_fullpath)
             
             # update DB entries' statuses to 2 (processed)
             for filename in L2_file_list:
                 sql.UpdateStatus("L2_files", filename.split('/')[-1], 2)
 
             # update L3m DB entry status to 1 (exists)
-            sql.UpdateStatus("L3m_files", L3m_filename.split('/')[-1], 1)
+            sql.UpdateStatus("L3m_files", L3m_fullpath.split('/')[-1], 1)
 
             print(datetime.now(), "Worker", self.id, "finished task successfully.")
         else:
