@@ -48,7 +48,6 @@ class Worker(Thread): # a class of a worker, a sinle thread in our glorious mult
             finally:
                 self.target = None
                 self.queue.task_done()
-            time.sleep(1)
 
     def Execute(self, L2_file_list): # the method that processes the batch of L2s into L3b and then finally L3M.
 
@@ -112,17 +111,17 @@ class Worker(Thread): # a class of a worker, a sinle thread in our glorious mult
             f"ifile={L3b_filename}",
             f"ofile={L3m_filename}",
             f"product={util.TYPE_TO_PRODUCT[props['type']]}",
-            "resolution=1",
+            "resolution=1km",
             "interp=area"
             ]
         
-        print(datetime.now(), "Worker", self.id, "started mapping", L3b_filename.split('/')[-1])
+        print(datetime.now(), "Worker", self.id, "started mapping", L3m_filename.split('/')[-1])
         sp.run(args, env=os.environ.copy(), stdout=sp.DEVNULL) # 
 
         # if processing successful delete raw data (L2 & L3b)
         if os.path.isfile(L3m_filename):
 
-            print(datetime.now(), "Worker", self.id, "finished mapping", L3b_filename.split('/')[-1], "now deleting input files.")
+            print(datetime.now(), "Worker", self.id, "finished mapping", L3m_filename.split('/')[-1], "now deleting input files.")
 
             # delete files
             for filename in L2_file_list:
@@ -195,7 +194,8 @@ def main():
         workers.append(worker)
 
     while sql.ThereAreUnprocessedFiles():
-
+        
+        time.sleep(1)
         forbidden_list = [worker.target for worker in workers]
         task = GetTask(forbidden_list)
 

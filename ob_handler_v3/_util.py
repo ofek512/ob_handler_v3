@@ -81,10 +81,10 @@ def GetFileProperties(filename_with_extension):
 
 def ProduceL3bFilename(L2_filename):
     p = GetFileProperties(L2_filename)
-    p["date"] = p["date"].strftime("%Y%d%m")
+    p["date"] = p["date"].strftime("%Y%m%d")
     return f"{p['mission']}_{p['sensor']}.{p['date']}.L3b.DAY.{p['type']}.{params.resolution}.nc"
 
 def ProduceL3mFilename(L2_filename):
     p = GetFileProperties(L2_filename)
-    p["date"] = p["date"].strftime("%Y%d%m")
+    p["date"] = p["date"].strftime("%Y%m%d")
     return f"{p['mission']}_{p['sensor']}.{p['date']}.L3m.DAY.{p['type']}.{params.resolution}.nc"
