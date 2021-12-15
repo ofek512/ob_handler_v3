@@ -149,10 +149,8 @@ def LoadEnvVariables():
 
 # returns a list of L2 files that have the same target and are all downloaded, but not processed yet
 def GetTask(forbidden_list):
-    
     for i in range(params.data_availability_check_timeout):
         # creating a list that contains small lists that in each list, all the L2s have the same L3 "target"
-        checker =  True
         initial_list = sql.GetFilesReadyForProcessing() # initial list that contains all the tuples of L2s in the database
         father_list = [] # the list that contains all the lists
         inner_list = [] # the list inside fatherlist that all the tuples have the same L3
@@ -170,13 +168,14 @@ def GetTask(forbidden_list):
                 continue
             if util.ProduceL3mFilename(inner_list[0][0]) in forbidden_list:
                 continue
+            checker = True
             for inner_list_info in inner_list:
                 if inner_list_info[1] != 1: # [1] is the file status. 0 not downloaded 1 downloaded 2 processed
                     checker = False
             if checker:  # if checker is true, it means all the L2 in the list are downloaded and its ready to get processed.
                 return [item[0] for item in inner_list] # returning a list of all the relevant L2 files.
         print ("No list was found suited for processing... waiting 60 minutes.")
-        time.sleep(util.PROCESSING_DELAY*60)
+        time.sleep(params.data_availability_check_interval*60)
         print (params.data_availability_check_timeout - i - 1, "tries left.")
 
     print ("No batch of L2s with the same L3 target were all ready to be processed.")

@@ -48,8 +48,6 @@ TYPE_TO_PRODUCT = {
 
 PAGE_SIZE = 800
 
-PROCESSING_DELAY = 10 # seconds
-
 # Returns OBPG file properties (mission, sensor, date, level and data type)
 def GetFileProperties(filename_with_extension):
 
