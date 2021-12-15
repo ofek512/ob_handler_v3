@@ -32,16 +32,16 @@ import json
 class Worker(Thread): # a class of a worker, a sinle thread in our glorious multi threading processing!
     def __init__(self, queue, id):
         Thread.__init__(self)
-        self.queue = queue
+        self.queue = queue # a single shared queue that all the workers get
         self.id = id
         self.target = None
 
     def run(self): # a method of a worker, the worker will be in an infinite loop. constantly search for a task to do.
         while True:
             try:
-                task = self.queue.get(block=True)
+                task = self.queue.get(block=True) # the worker will get a task from the queue. if there are not tasks to get, the worker will wait not in loop until theres task
                 print("Worker", self.id, "given a task.")
-                self.target = util.ProduceL3mFilename(task[0])
+                self.target = util.ProduceL3mFilename(task[0]) # the target is the name of the L3m 
                 self.Execute(task) # executing said task
             except Exception as e:
                 print(datetime.now(), "Worker", self.id, "threw an exception:", e) 
