@@ -88,6 +88,9 @@ file_downloaded = """   UPDATE L2_files
 update_status = """ UPDATE {0}
                         SET status={2}
                         WHERE id='{1}'"""
+update_priority = """ UPDATE {0}
+                         SET priority={2}
+                         WHERE id='{1}'"""
 verify_file = """   UPDATE {0}
                         SET verifier_bit=1
                         WHERE id='{1}'"""
@@ -222,6 +225,10 @@ def FileDownloaded(filename, location):
 def UpdateStatus(table, filename, status):
     Execute(update_status.format(table, filename, status))
 
+# update the give file's priority in the given table    
+def UpdatePriority(table, filename, priority):
+    Execute(update_priority.format(table, filename, priority))    
+    
 # set verifier_bit to 1
 def VerifyFile(table, filename):
     Execute(verify_file.format(table, filename))
