@@ -104,6 +104,9 @@ verify_file = """   UPDATE {0}
                         WHERE id='{1}'"""
 reset_verifier = """UPDATE {0}
                         SET verifier_bit=0"""
+# deleting files
+delete_L2file = """ DELETE FROM L2_files WHERE id='{0}'"""
+                       
 
 # execute a given query, and return a value according to the return_type argument
 def Execute(query, return_type = None):
@@ -267,6 +270,9 @@ def GetFileLocation(table, filename):
 # returns false if and only if the database doesn't contain any L2 files with status 1
 def ThereAreUnprocessedFiles():
     return bool(Execute(count_unprocessed_files, "scalar"))
+  
+def DeleteSpecificFile(filename):
+    return Execute(delete_L2file.format(filename))
 
 if __name__ == "__main__":
     # if run as its own script, this produces the File Management Database
