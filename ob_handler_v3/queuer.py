@@ -52,6 +52,9 @@ class Interval:
     def __str__(self):
         return self.start.strftime("%Y-%m-%d") + "," + (self.end + timedelta(1)).strftime("%Y-%m-%d")
 
+    def copy(self):
+        return Interval(self.start, self.end)
+
 # converts a YYYYDDDHHMMSS date format into a YYYYMMDDTHHMMSS time format
 def GenerateTimestamp(ts):
     return datetime.strptime(ts, "%Y%j%H%M%S").strftime("%Y%m%dT%H%M%S")
@@ -135,7 +138,7 @@ def main():
     mission_to_requests = {mission:[] for mission in missions}
     for mission,dates in dates_by_mission.items():
         dates.sort()
-        intervals = [timespan]
+        intervals = [timespan.copy()]
         for date in dates:
             i = intervals[-1]
             del intervals[-1]
@@ -144,7 +147,7 @@ def main():
         if len(intervals) == 0:
             print("For the mission", mission,
                   "no files will be downloaded, as all data in the provided timespan already exists in L3m format.")
-        elif len(intervals) > 1:
+        elif not intervals[0] == timespan:
             print("For the mission", mission,
                   """some data in the provided timespan already exists in L3m format. These dates have been excluded.
 Because of that, instead of following the entire timespan, the following timespans will be downloaded:""")
