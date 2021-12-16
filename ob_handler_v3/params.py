@@ -16,4 +16,4 @@ appkey = "6d5b459daa8cfab9462d3e893ee09e0e052cfe92" # appkey - needed to downloa
 data_availability_check_interval = 60 # minutes
 data_availability_check_timeout  = 12 # tries
 resolution = "1km"
-threads = 11
+threads = 14

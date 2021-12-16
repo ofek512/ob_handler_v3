@@ -90,8 +90,11 @@ insert_L3m = """INSERT
 file_downloaded = """   UPDATE L2_files
                             SET location='{1}', file_status=1, created_at='{2}'
                             WHERE id='{0}'"""
+file_produced = """ UPDATE L3m_files
+                        SET location='{1}', file_status=1, created_at='{2}'
+                        WHERE id='{0}'"""
 update_status = """ UPDATE {0}
-                        SET status={2}
+                        SET file_status={2}
                         WHERE id='{1}'"""
 update_priority = """ UPDATE {0}
                          SET priority={2}
@@ -229,6 +232,10 @@ def QueueFile(entry):
 # update the entry concerning the specified L2 file, when it has been downloaded
 def FileDownloaded(filename, location):
     Execute(file_downloaded.format(filename, location, datetime.now().strftime("%Y-%m-%d %H:%M")))
+
+# update the entry concerning the specified L3m file, when it has been produced
+def FileProduced(filename, location):
+    Execute(file_produced.format(filename, location, datetime.now().strftime("%Y-%m-%d %H:%M")))
 
 # update the given file's status in the given table
 def UpdateStatus(table, filename, status):

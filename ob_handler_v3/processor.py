@@ -132,8 +132,8 @@ class Worker(Thread): # a class of a worker, a sinle thread in our glorious mult
             for filename in L2_file_list:
                 sql.UpdateStatus("L2_files", filename.split('/')[-1], 2)
 
-            # update L3m DB entry status to 1 (exists)
-            sql.UpdateStatus("L3m_files", L3m_fullpath.split('/')[-1], 1)
+            # update L3m DB entry
+            sql.FileProduced(L3m_fullpath.split('/')[-1], type_subdirectory)
 
             print(datetime.now(), "Worker", self.id, "finished task successfully.")
         else:
