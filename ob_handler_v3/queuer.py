@@ -178,6 +178,7 @@ Because of that, instead of following the entire timespan, the following timespa
 
     # put filenames in DB
     print("Inserting download URLs into database...", end=' ', flush=True)
+    sum = 0
     for filename in filenames:
         # fix name
         name = GenFilename(filename.split('/')[-1])
@@ -199,8 +200,10 @@ Because of that, instead of following the entire timespan, the following timespa
             "priority": priority
             }
         sql.QueueFile(db_entry)
+        sum+=1
 
     print("Done.")
+    print(sum, "files queued.")
 
 if __name__ == "__main__":
     main()
