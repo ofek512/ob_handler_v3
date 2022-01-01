@@ -68,10 +68,14 @@ select_unverified_existing = """ SELECT id
                                     FROM {0}
                                     WHERE verifier_bit=0
                                         AND file_status>0"""
+# get queries
 get_file_location = """ SELECT location
                             FROM {0}
                             WHERE id='{1}'"""
 
+get_file_status = """ SELECT file_status
+                           FROM {0}
+                           WHERE id='{1}' """
 # insertion queries
 insert_L2_processed = """   INSERT
                                 INTO L2_files ({0})
@@ -225,6 +229,10 @@ def GetExisting(table):
 # get <limit> files that are ready to be downloaded
 def GetReadyForDownload(limit):
     return Execute(select_ready_for_download.format(limit), "list")
+
+# gets filestatus  
+def GetFileStatus(table, filename)
+    return Execute(get_file_status.format(table, filename))
 
 # queue up a L2 file to be downloaded
 def QueueFile(entry):
