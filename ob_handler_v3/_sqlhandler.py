@@ -231,7 +231,7 @@ def GetReadyForDownload(limit):
     return Execute(select_ready_for_download.format(limit), "list")
 
 # gets filestatus  
-def GetFileStatus(table, filename)
+def GetFileStatus(table, filename):
     return Execute(get_file_status.format(table, filename))
 
 # queue up a L2 file to be downloaded
