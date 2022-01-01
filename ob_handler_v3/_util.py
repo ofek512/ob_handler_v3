@@ -1,8 +1,8 @@
 """
 General Utility file
 Created by Lun Surdyaev on 2021-12-04
-Last Updated on 2021-12-13
-Maintained by Lun Surdyaev lunvang@gmail.com
+Last Updated on 2022-01-01
+Maintained by Ofek Yankis ofek5202@gmail.com
 """
 
 import os
