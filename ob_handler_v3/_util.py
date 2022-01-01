@@ -6,6 +6,9 @@ Maintained by Lun Surdyaev lunvang@gmail.com
 """
 
 import os
+from os import listdir
+from os.path import isfile, join
+
 from datetime import datetime
 
 import params
@@ -87,5 +90,34 @@ def ProduceL3mFilename(L2_filename):
     p["date"] = p["date"].strftime("%Y%m%d")
     return f"{p['mission']}_{p['sensor']}.{p['date']}.L3m.DAY.{p['type']}.{params.resolution}.nc"
 
-def GetExistingFilenames():
-    pass
+# gets all file paths from the directory and sub directories 
+def getListOfFiles(path):
+    # create a list of file and sub directories 
+    # names in the given directory 
+    listOfFile = os.listdir(dirName)
+    allFiles = list()
+    # Iterate over all the entries
+    for entry in listOfFile:
+        # Create full path
+        fullPath = os.path.join(dirName, entry)
+        # If entry is a directory then get the list of files in this directory 
+        if os.path.isdir(fullPath):
+            allFiles = allFiles + getListOfFiles(fullPath)
+        else:
+            allFiles.append(fullPath)
+                
+    return allFiles    
+
+
+def GetExistingFilenamesAndPaths(path):
+    allList = []
+    locations = getListOfFiles(path)
+    fileNames = [for l in locations os.path.splitext(l)[0].split('/')[-1]]
+    allList.append(locations)
+    allList.append(fileNames)
+    return allList
+    
+    
+                                                
+                                                
+                                             
