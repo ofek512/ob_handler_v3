@@ -1,8 +1,8 @@
 """
 File Management Database Verifier Script
 Created by Lun Surdyaev on 2021-12-03
-Last Updated on 2021-12-08
-Maintained by Lun Surdyaev lunvang@gmail.com
+Last Updated on 2022-01-01
+Maintained by Ofek Yankis ofek5202@gmail.com
 
 Description:
 The script will check for inconsistensies in the file management database, and if found, will display and automatically fix them.
@@ -27,14 +27,14 @@ def HandleL2():
 def HandleL3m():
 
     print("Getting list of all L3m files on the disk...", end=' ', flush=True)
-    filenames_locations = util.GetExistingFilenames(params.path_to_data+"L3m/")
+    l3List = util.GetExistingFilenamesAndPaths(params.path_to_data+"L3m/") # gets a list that [0] is the location and [1] is the filename
     print("Done.")
 
     print("Verifying those files' entries in the database...", flush=True)
-    for filename, location in filenames_locations:
+    for location, filename in l3List:
 
         # get file status
-        status = sql.GetFileStatus("L3m_files", )
+        status = sql.GetFileStatus("L3m_files", filename)
         
         # if the file isn't in the DB at all, notify user and insert it
         if len(status) == 0:
