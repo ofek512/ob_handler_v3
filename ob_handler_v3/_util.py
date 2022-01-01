@@ -86,3 +86,6 @@ def ProduceL3mFilename(L2_filename):
     p = GetFileProperties(L2_filename)
     p["date"] = p["date"].strftime("%Y%m%d")
     return f"{p['mission']}_{p['sensor']}.{p['date']}.L3m.DAY.{p['type']}.{params.resolution}.nc"
+
+def GetExistingFilenames():
+    pass
