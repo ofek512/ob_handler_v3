@@ -112,7 +112,7 @@ def getListOfFiles(path):
 def GetExistingFilenamesAndPaths(path):
     allList = []
     locations = getListOfFiles(path)
-    fileNames = [for l in locations os.path.splitext(l)[0].split('/')[-1]]
+    fileNames = [os.path.splitext(l)[0].split('/')[-1] for l in locations]
     allList.append(locations)
     allList.append(fileNames)
     return allList
