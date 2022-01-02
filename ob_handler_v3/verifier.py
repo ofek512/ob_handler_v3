@@ -54,7 +54,7 @@ def HandleL3m():
     # if there are any database entries remaining that are listed as existing,
     # but aren't on the disk, notify user and update DB
     print("Verifying that no missing files were marked as existing...")
-    unverified_existing = sql.GetUnverifiedExisting("L3m_files")
+    unverified_existing = sql.GetUnverifiedExisting("L3m_files") # need to add the function
     for id in unverified_existing:
         print("The file", id, "is listed as existing on the DB, but is not present on the disk. Marking it as missing.")
         sql.UpdateStatus("L3m_files", id, 0)
