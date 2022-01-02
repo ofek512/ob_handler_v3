@@ -67,7 +67,7 @@ select_ready_for_processing = """ SELECT id, file_status, target
 select_unverified_existing = """ SELECT id
                                     FROM {0}
                                     WHERE verifier_bit=0
-                                        AND file_status>0"""
+                                        AND file_status>0 """
 # get queries
 get_file_location = """ SELECT location
                             FROM {0}
@@ -76,6 +76,7 @@ get_file_location = """ SELECT location
 get_file_status = """ SELECT file_status
                            FROM {0}
                            WHERE id='{1}' """
+
 # insertion queries
 insert_L2_processed = """   INSERT
                                 INTO L2_files ({0})
@@ -233,7 +234,11 @@ def GetReadyForDownload(limit):
 # gets filestatus  
 def GetFileStatus(table, filename):
     return Execute(get_file_status.format(table, filename))
-
+  
+# gets all the unverified files 
+def GetUnverifiedExisting(table):
+    return Execute(select_unverified_existing.format(table))
+  
 # queue up a L2 file to be downloaded
 def QueueFile(entry):
     entry["file_status"] = 0
