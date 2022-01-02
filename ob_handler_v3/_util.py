@@ -94,12 +94,12 @@ def ProduceL3mFilename(L2_filename):
 def getListOfFiles(path):
     # create a list of file and sub directories 
     # names in the given directory 
-    listOfFile = os.listdir(dirName)
+    listOfFile = os.listdir(path)
     allFiles = list()
     # Iterate over all the entries
     for entry in listOfFile:
         # Create full path
-        fullPath = os.path.join(dirName, entry)
+        fullPath = os.path.join(path, entry)
         # If entry is a directory then get the list of files in this directory 
         if os.path.isdir(fullPath):
             allFiles = allFiles + getListOfFiles(fullPath)
