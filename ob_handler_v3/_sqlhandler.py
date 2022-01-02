@@ -1,8 +1,8 @@
 """
 SQL Handling Utility
 Created by Lun Surdyaev on 2021-12-04
-Last Updated on 2021-12-15
-Maintained by Lun Surdyaev lunvang@gmail.com
+Last Updated on 2022-01-02
+Maintained by Ofek Yankis ofek5202@gmail.com
 
 Description:
 This is a utility for handling the SQL-based File Management Database.
