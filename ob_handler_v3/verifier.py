@@ -44,7 +44,7 @@ def HandleL3m():
             sql.InsertL3m(entry)
 
         # else, check if the database displays correct status
-        elif status[0][0] == 0:
+        elif status == 0:
             print("The file", filename, "was listed as missing despite its presence on the disk. Marking it as existing.")
             sql.UpdateStatus("L3m_files", filename, 1)
 
