@@ -1,7 +1,7 @@
 """
 SQL Handling Utility
 Created by Lun Surdyaev on 2021-12-04
-Last Updated on 2022-01-02
+Last Updated on 2022-01-03
 Maintained by Ofek Yankis ofek5202@gmail.com
 
 Description:
@@ -87,9 +87,9 @@ insert_L2_unprocessed = """ INSERT OR IGNORE
                             INSERT OR IGNORE
                                 INTO L2_files ({0})
                                 VALUES ({1});"""
-insert_L3m = """INSERT
+insert_L3m = """INSERT or REPLACE
                     INTO L3m_files ({0})
-                    VALUES ({1}); """                    ############################## theres a problem here
+                    VALUES ({1});"""
 
 # updating queries
 file_downloaded = """   UPDATE L2_files
@@ -186,7 +186,7 @@ def FormatEntry(entry):
 # insert a L3m file into the database
 def InsertL3m(entry):
     query = insert_L3m.format(*FormatEntry(entry))
-    Execute(query)                                                       ################# problem in the query
+    Execute(query)
     
 # insert an existing L2 file into the database
 def InsertL2(entry):
