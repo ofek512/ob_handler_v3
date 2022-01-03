@@ -22,6 +22,9 @@ import _util as util
 import _sqlhandler as sql
 
 def HandleL2():
+    
+    hasTarget = false
+    hasTarget = 
     print("Getting list of all L3m files on the disk...", end=' ', flush=True)
     l2List = util.GetExistingFilenamesAndPaths(params.path_to_data+"L2/") # gets a list that [0] is the location and [1] is the filename
     print("Done.")
