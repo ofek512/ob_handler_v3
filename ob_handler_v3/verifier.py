@@ -1,7 +1,7 @@
 """
 File Management Database Verifier Script
 Created by Lun Surdyaev on 2021-12-03
-Last Updated on 2022-01-01
+Last Updated on 2022-01-02
 Maintained by Ofek Yankis ofek5202@gmail.com
 
 Description:
@@ -31,15 +31,16 @@ def HandleL3m():
     print("Done.")
 
     print("Verifying those files' entries in the database...", flush=True)
-    for location, filename in l3List:
+    location_pointer = 0
+    for filename in l3List[1]:
 
         # get file status
         status = sql.GetFileStatus("L3m_files", filename)
-        
+       
         # if the file isn't in the DB at all, notify user and insert it
-        if len(status) == 0:
+        if status is None:
             print("The file", filename, "was not found in the database. Inserting it.")
-            entry = {"id": filename, "location": location, "file_status": 1}
+            entry = {"id": filename, "location": l3List[0][location_pointer], "file_status": 1}
             sql.InsertL3m(entry)
 
         # else, check if the database displays correct status
@@ -49,6 +50,7 @@ def HandleL3m():
 
         # as this file was dealt with, set its verifier bit to 1
         sql.VerifyFile("L3m_files", filename)
+        location_pointer += 1
     print("Existing file verification done.")
 
     # if there are any database entries remaining that are listed as existing,
