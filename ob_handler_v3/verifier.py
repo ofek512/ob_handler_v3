@@ -82,8 +82,8 @@ def HandleL3m():
         # if the file isn't in the DB at all, notify user and insert it
         if status is None:
             print("The file", filename, "was not found in the database. Inserting it.")
-            entry = {"id": filename, "location": l3List[0][location_pointer], "file_status": 1}
-            sql.InsertL3m(entry)
+            file_location = l3List[0][location_pointer] 
+            sql.UpdateL3m(file_location, filename)
 
         # else, check if the database displays correct status
         elif status == 0:
