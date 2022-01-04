@@ -91,6 +91,12 @@ insert_L3m = """INSERT or REPLACE
                     INTO L3m_files ({0})
                     VALUES ({1});"""
 
+update_L3m = """ UPDATE L3m_files
+                   SET file_status = 1,
+                   SET location = {0}
+                   WHERE id = {1};
+                             """
+
 # updating queries
 file_downloaded = """   UPDATE L2_files
                             SET location='{1}', file_status=1, created_at='{2}'
@@ -182,6 +188,10 @@ def FormatEntry(entry):
             formatted_entry[item[0]] = str(item[1])
 
     return ','.join(formatted_entry.keys()), ','.join(formatted_entry.values())
+  
+# updates L3m file location and status
+def UpdateL3m(filename, location):
+    Execute(updateL3m.format(location, filename))
 
 # insert a L3m file into the database
 def InsertL3m(entry):
@@ -203,6 +213,10 @@ def InsertL2(entry):
         L3m_entry = {"id":entry["target"], "file_status":0}
         Execute(insert_L2_unprocessed.format(*FormatEntry(entry), *FormatEntry(L3m_entry)))
 
+def UpdateL3m(entry):
+  query = update_L3m.format(*Formatentry(entry))
+  Execute(query)
+        
 # insert files from a certain type and from a certain folder into the DB
 def InsertFiles(path, filetype):
     filelist = os.listdir(path)
