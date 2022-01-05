@@ -26,6 +26,9 @@ def main():
         properties = util.GetFileProperties(file)
         if properties["date"] >= start_date and properties["date"] <= end_date:
             # the logic is in here
+            print("The file name:" f /n "The file status:" sql.GetFileStatus("L3m_files", f))
+            print(/n)
+            print(/n)
     
     
     
