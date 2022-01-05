@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import params
 import _util as util
 import _sqlhandler as sql
@@ -23,12 +25,11 @@ def main():
     files = sql.GetExisting("L3m_files") 
     
     for f in files:
-        properties = util.GetFileProperties(file)
+        properties = util.GetFileProperties(f)
         if properties["date"] >= start_date and properties["date"] <= end_date:
             # the logic is in here
-            print("The file name:" f /n "The file status:" sql.GetFileStatus("L3m_files", f))
-            print(/n)
-            print(/n)
+            print("The file name: ", f, "The file status: ", sql.GetFileStatus("L3m_files", f))
+
     
     
     
