@@ -292,7 +292,8 @@ def GetFileLocation(table, filename):
 def ThereAreUnprocessedFiles():
     return bool(Execute(count_unprocessed_files, "scalar"))
   
-def DeleteSpecificFile(filename):
+def DeleteSpecificFile(location, filename):
+    os.remove(location ,filename, dir_fd=none)
     return Execute(delete_L2file.format(filename))
 
 if __name__ == "__main__":
