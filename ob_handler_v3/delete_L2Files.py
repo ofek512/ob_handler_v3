@@ -30,13 +30,14 @@ def UserInput():
 def main():
     start_date, end_date = UserInput()  
     
-    all_files = sql.GetExisting("L2_files")
-
-    for file in all_files:
+    l2List = util.GetExistingFilenamesAndPaths(params.path_to_data+"L2/")
+    location_pointer = 0
+    for file in l2List[1]:
 
         properties = util.GetFileProperties(file)
         if properties["date"] >= start_date and properties["date"] <= end_date:
-            sql.DeleteSpecificFile(file)
+            sql.DeleteSpecificFile(l2List[0][location_pointer], file)
+        location_pointer += 1    
     
 
 
