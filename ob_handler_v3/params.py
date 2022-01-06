@@ -1,5 +1,5 @@
 # database parameters
-path_to_data = "/data/lsurdyaev/data/"
+path_to_data = "/home/oyankis/original_code/data/"
 db_filename = "file_management.db"
 
 # queuer parameters
