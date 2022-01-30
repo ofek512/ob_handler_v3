@@ -30,16 +30,18 @@ import time
 import json
 
 class Worker(Thread): # a class of a worker, a sinle thread in our glorious multi threading processing!
-    def __init__(self, queue, id):
+    def __init__(self, queue, id, used_l3m):
         Thread.__init__(self)
         self.queue = queue # a single shared queue that all the workers get
         self.id = id
         self.target = None
+        self.used_l3m = used_l3m
 
     def run(self): # a method of a worker, the worker will be in an infinite loop. constantly search for a task to do.
         while True:
             try:
                 task = self.queue.get(block=True) # the worker will get a task from the queue. if there are not tasks to get, the worker will wait not in loop until theres task
+                self.used_l3m.append(util.ProduceL3mFilename(task[0]))
                 print("Worker", self.id, "given a task.")
                 self.target = util.ProduceL3mFilename(task[0]) # the target is the name of the L3m 
                 self.Execute(task) # executing said task
@@ -148,7 +150,7 @@ def LoadEnvVariables():
     os.environ = env
 
 # returns a list of L2 files that have the same target and are all downloaded, but not processed yet
-def GetTask(forbidden_list):
+def GetTask(used_l3m):
     for i in range(params.data_availability_check_timeout):
         # creating a list that contains small lists that in each list, all the L2s have the same L3 "target"
         initial_list = sql.GetFilesReadyForProcessing() # initial list that contains all the tuples of L2s in the database
@@ -156,6 +158,12 @@ def GetTask(forbidden_list):
         inner_list = [] # the list inside fatherlist that all the tuples have the same L3
         target_check = initial_list[0][2] # the first L3 "target" before the for
         for list_info in initial_list: # this for sorts all the lists into same L3 and stores these lists into the fatherList
+            usedL3Checker = False
+            for l3m in used_l3m:
+                if l3m == list_info[2]:
+                    usedL3Checker = True
+            if usedL3Checker:
+                continue
             if target_check == list_info[2]: # if the tuple has the same L3 as the target check 
                 inner_list.append(list_info)
             else:
@@ -166,7 +174,7 @@ def GetTask(forbidden_list):
         for inner_list in father_list: # checking for the first inner list that all of the L2s inside are downloaded.
             if len(inner_list) == 0:
                 continue
-            if util.ProduceL3mFilename(inner_list[0][0]) in forbidden_list:
+            if util.ProduceL3mFilename(inner_list[0][0]) in used_l3m:
                 continue
             checker = True
             for inner_list_info in inner_list:
@@ -186,17 +194,17 @@ def main():
     LoadEnvVariables()
 
     tasks = Queue()
+    used_l3m = [] # isntead of forbidden list, stores all the names of L3m files that were finished.
     workers = []
     for i in range(params.threads):
-        worker = Worker(tasks, i)
+        worker = Worker(tasks, i, used_l3m)
         worker.start()
         workers.append(worker)
 
     while sql.ThereAreUnprocessedFiles():
         
         time.sleep(1)
-        forbidden_list = [worker.target for worker in workers]
-        task = GetTask(forbidden_list)
+        task = GetTask(used_l3m)
 
         tasks.put(task)
 
