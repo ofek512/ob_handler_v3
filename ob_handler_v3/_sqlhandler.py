@@ -2,7 +2,7 @@
 SQL Handling Utility
 Created by Lun Surdyaev on 2021-12-04
 Last Updated on 2022-01-03
-Maintained by Ofek Yankis ofek5202@gmail.com OOGA BOOGA
+Maintained by Ofek Yankis ofek5202@gmail.com OOGA BOOGA dooga
 Description:
 This is a utility for handling the SQL-based File Management Database.
 It uses the constants defined in params.py to find the database, and provides an interface to it via its functions.
